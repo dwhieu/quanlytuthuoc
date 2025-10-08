@@ -53,4 +53,17 @@ public class AuthController {
         user.setPassword(null);
         return ResponseEntity.ok(user);
     }
+
+    @PutMapping("/user/{username}")
+    public ResponseEntity<?> updateUser(@PathVariable String username, @RequestBody User user) {
+        try {
+            User updated = authService.updateUser(username, user);
+            if (updated == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Tài khoản không tồn tại");
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi máy chủ");
+        }
+    }
 }

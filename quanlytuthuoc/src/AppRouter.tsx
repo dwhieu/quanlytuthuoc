@@ -42,7 +42,8 @@ const AppRouter: React.FC = () => {
               </RequireAuth>
             }
           />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* If user is not authenticated, redirect unknown routes to /login so the login page shows first */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

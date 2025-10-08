@@ -1,0 +1,35 @@
+/* Simple styles for profile actions */
+.profile-actions { display: flex; align-items: center; }
+.profile-actions .btn { height: 38px; }
+.profile-actions .btn + .btn { margin-left: 8px; }
+.card { border-radius: 10px; }
+
+/* Top: avatar left, info right */
+.profile-top { display: flex; gap: 20px; align-items: flex-start; }
+.avatar-column { width: 260px; flex: 0 0 260px; display:flex; flex-direction:column; align-items:center; }
+.avatar-box { width: 220px; height: 220px; border-radius: 10px; overflow: hidden; display:flex; align-items:center; justify-content:center; border: 1px solid #eee; background:#fff; }
+.profile-avatar { width: 100%; height: 100%; object-fit:cover; }
+.avatar-buttons { width:100%; display:flex; flex-direction:column; gap:8px; }
+.info-column { flex:1; }
+
+
+/* Avatar modal */
+.avatar-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 4000; }
+.avatar-modal { width: 760px; max-width: 95%; background: #fff; border-radius: 8px; padding: 20px; position: relative; display:flex; flex-direction:column; align-items:center; }
+.avatar-modal .close-btn { position: absolute; right: 12px; top: 8px; border: none; background: transparent; font-size: 18px; }
+.avatar-conditions { max-height: 160px; overflow: auto; font-size: 14px; color: #333; margin-bottom: 12px; }
+.avatar-controls { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.upload-actions { display:flex; gap: 8px; justify-content: center; }
+.avatar-preview-area { display:flex; align-items:center; justify-content:center; min-height:160px; width: 100%; max-width: 420px; border: 1px dashed #ddd; border-radius:8px; padding: 18px; }
+.avatar-dropzone { color:#888; }
+.avatar-preview { max-width: 220px; max-height:220px; border-radius:6px; }
+.webcam-area { display:flex; flex-direction:column; align-items:center; }
+.webcam-video { width: 320px; max-width: 100%; border-radius:6px; background:#000; }
+.modal-actions { display:flex; justify-content:center; gap:12px; margin-top: 18px; }
+.preview-column { display:flex; flex-direction:column; align-items:center; gap:12px; }
+
+@media (max-width: 800px) {
+	.profile-top { flex-direction: column; }
+	.avatar-column { width: 100%; flex: none; }
+	.avatar-box { width: 180px; height: 180px; }
+}

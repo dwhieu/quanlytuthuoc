@@ -41,4 +41,26 @@ public class AuthService {
     public User getByUsername(String username) {
         return userRepository.findByUsername(username).orElse(null);
     }
+
+    public User updateUser(String username, User newData) {
+        User user = userRepository.findByUsername(username).orElse(null);
+        if (user == null) return null;
+        // if email changed, ensure it's not used by another account
+        if (newData.getEmail() != null && !newData.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(newData.getEmail())) {
+                throw new IllegalArgumentException("Email đã được sử dụng!");
+            }
+        }
+        // update allowed fields
+        if (newData.getFullName() != null) user.setFullName(newData.getFullName());
+        if (newData.getDob() != null) user.setDob(newData.getDob());
+        if (newData.getHomeTown() != null) user.setHomeTown(newData.getHomeTown());
+        if (newData.getPhoneNumber() != null) user.setPhoneNumber(newData.getPhoneNumber());
+        if (newData.getEmail() != null) user.setEmail(newData.getEmail());
+
+        userRepository.save(user);
+        // don't return password
+        user.setPassword(null);
+        return user;
+    }
 }

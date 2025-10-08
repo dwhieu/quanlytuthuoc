@@ -15,7 +15,7 @@ const FaFacebookIcon = FaFacebook as unknown as React.ComponentType<any>;
 const FaGoogleIcon = FaGoogle as unknown as React.ComponentType<any>;
 
 const LoginPage: React.FC = () => {
-    const { login } = useAuth();
+    const { login, isLoggedIn } = useAuth();
     const navigate = useNavigate();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -60,6 +60,13 @@ const LoginPage: React.FC = () => {
             alert('Lỗi kết nối! Vui lòng kiểm tra máy chủ Java đang chạy trên Port 8000.');
         }
     };
+
+    // If already logged in, redirect to home
+    React.useEffect(() => {
+        if (isLoggedIn) {
+            navigate('/');
+        }
+    }, [isLoggedIn, navigate]);
 
 
     return (

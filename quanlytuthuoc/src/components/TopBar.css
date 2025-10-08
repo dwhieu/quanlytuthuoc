@@ -13,3 +13,24 @@ input:focus {
   box-shadow: none !important;
   border-color: #0d6efd !important;
 }
+
+/* Avatar hover dropdown */
+.avatar-area { padding: 6px 8px; border-radius: 6px; }
+.avatar-area:hover { background: rgba(13,110,253,0.04); }
+.avatar-dropdown {
+  position: absolute;
+  right: 0;
+  top: 42px;
+  min-width: 160px;
+  background: #fff;
+  border-radius: 6px;
+  display: none; /* hidden by default, shown when .show present */
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 200;
+}
+.avatar-dropdown.show { display: flex; }
+.avatar-dropdown .dropdown-item { padding: 10px 12px; cursor: pointer; }
+.avatar-dropdown .dropdown-item:hover { background: #f8f9fa; }
+.dropdown-icon { width: 16px; height: 16px; }
+.user-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
