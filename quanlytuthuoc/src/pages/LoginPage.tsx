@@ -46,8 +46,9 @@ const LoginPage: React.FC = () => {
             if (response.ok) { 
                 // Xử lý thành công (hiện backend trả message, chưa có token JWT)
                 // Không lưu message làm token; lưu một cờ đơn giản nếu cần
+                // lưu username để lấy profile
                 localStorage.setItem('isLoggedIn', 'true');
-                login(); 
+                login(username);
                 alert(message || 'Đăng nhập thành công!');
                 navigate('/'); 
             } else {

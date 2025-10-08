@@ -1,4 +1,6 @@
 import React from "react";
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { Form, InputGroup } from "react-bootstrap";
 import { FaSearch, FaBell, FaQuestionCircle, FaUserCircle } from "react-icons/fa";
 import "./TopBar.css";
@@ -11,6 +13,10 @@ const FaQuestionCircleIcon = FaQuestionCircle as unknown as React.ComponentType<
 const FaUserCircleIcon = FaUserCircle as unknown as React.ComponentType<any>;
 
 const TopBar: React.FC = () => {
+  const navigate = useNavigate();
+  const { username } = useAuth();
+  const onProfileClick = () => navigate('/profile');
+
   return (
     <div className="topbar d-flex align-items-center justify-content-between bg-white shadow-sm px-4 py-2">
       {/* Logo và tiêu đề */}
@@ -46,7 +52,10 @@ const TopBar: React.FC = () => {
           </span>
         </div>
   <FaQuestionCircleIcon size={18} className="text-muted cursor-pointer" />
-  <FaUserCircleIcon size={22} className="text-muted cursor-pointer" />
+  <div onClick={onProfileClick} className="d-flex align-items-center cursor-pointer">
+    <FaUserCircleIcon size={22} className="text-muted" />
+    {username && <span className="ms-2 small text-muted">{username}</span>}
+  </div>
       </div>
     </div>
   );

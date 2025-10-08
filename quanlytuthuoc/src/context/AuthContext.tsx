@@ -2,7 +2,8 @@ import React, { createContext, useState, useContext, ReactNode } from 'react';
 
 interface AuthContextType {
   isLoggedIn: boolean;
-  login: () => void;
+  username?: string | null;
+  login: (username?: string) => void;
   logout: () => void;
 }
 
@@ -20,19 +21,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return false;
     }
   });
+  const [username, setUsername] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem('username');
+    } catch {
+      return null;
+    }
+  });
 
-  const login = () => {
-    try { localStorage.setItem('isLoggedIn', 'true'); } catch {};
+  const login = (user?: string) => {
+    try {
+      localStorage.setItem('isLoggedIn', 'true');
+      if (user) localStorage.setItem('username', user);
+    } catch {}
     setIsLoggedIn(true);
+    if (user) setUsername(user);
   };
 
   const logout = () => {
-    try { localStorage.removeItem('isLoggedIn'); } catch {};
+    try {
+      localStorage.removeItem('isLoggedIn');
+      localStorage.removeItem('username');
+    } catch {}
     setIsLoggedIn(false);
+    setUsername(null);
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, username, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

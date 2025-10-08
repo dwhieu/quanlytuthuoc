@@ -41,4 +41,16 @@ public class AuthController {
         // Mật khẩu không đúng
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(message);
     }
+
+    // Lấy thông tin user (không trả password)
+    @GetMapping("/user/{username}")
+    public ResponseEntity<?> getUser(@PathVariable String username) {
+        User user = authService.getByUsername(username);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Tài khoản không tồn tại");
+        }
+        // ẩn password trước khi trả
+        user.setPassword(null);
+        return ResponseEntity.ok(user);
+    }
 }

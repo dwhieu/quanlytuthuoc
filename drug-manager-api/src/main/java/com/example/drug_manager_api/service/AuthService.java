@@ -37,4 +37,8 @@ public class AuthService {
             return "Mật khẩu không đúng!";
         return "Đăng nhập thành công!";
     }
+
+    public User getByUsername(String username) {
+        return userRepository.findByUsername(username).orElse(null);
+    }
 }

@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Dashboard from './components/Dashboard';
 import Layout from './components/Layout';
+import ProfilePage from './pages/ProfilePage';
 
 const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isLoggedIn } = useAuth();
@@ -21,6 +22,16 @@ const AppRouter: React.FC = () => {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route
+            path="/profile"
+            element={
+              <RequireAuth>
+                <Layout>
+                  <ProfilePage />
+                </Layout>
+              </RequireAuth>
+            }
+          />
           <Route
             path="/"
             element={
