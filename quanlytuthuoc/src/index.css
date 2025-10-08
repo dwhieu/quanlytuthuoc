@@ -1,0 +1,21 @@
+body {
+  background-color: #f5f8fb;
+  font-family: "Inter", sans-serif;
+  overflow-x: hidden;
+}
+
+.sidebar {
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.card {
+  border-radius: 16px !important;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
