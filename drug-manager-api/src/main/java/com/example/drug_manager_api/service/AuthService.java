@@ -63,4 +63,22 @@ public class AuthService {
         user.setPassword(null);
         return user;
     }
+
+    /**
+     * Change the password for an existing user.
+     * @param username the username
+     * @param currentPassword the user's current plain password
+     * @param newPassword the new plain password
+     * @return true if changed successfully, false if user not found or current password wrong
+     */
+    public boolean changePassword(String username, String currentPassword, String newPassword) {
+        User user = userRepository.findByUsername(username).orElse(null);
+        if (user == null) return false;
+        // verify current password
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) return false;
+        // encode and set new password
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        return true;
+    }
 }

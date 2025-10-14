@@ -66,4 +66,32 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi máy chủ");
         }
     }
+
+    // Change password for user
+    @PutMapping("/user/{username}/password")
+    public ResponseEntity<String> changePassword(@PathVariable String username, @RequestBody PasswordChangeRequest req) {
+        if (req == null || req.getCurrentPassword() == null || req.getNewPassword() == null) {
+            return ResponseEntity.badRequest().body("Yêu cầu không hợp lệ");
+        }
+        boolean ok = authService.changePassword(username, req.getCurrentPassword(), req.getNewPassword());
+        if (!ok) {
+            // Could be user not found or current password wrong. Try to distinguish
+            if (authService.getByUsername(username) == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Tài khoản không tồn tại");
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Mật khẩu hiện tại không đúng");
+        }
+        return ResponseEntity.ok("Đổi mật khẩu thành công");
+    }
+
+    // DTO for password change
+    public static class PasswordChangeRequest {
+        private String currentPassword;
+        private String newPassword;
+
+        public String getCurrentPassword() { return currentPassword; }
+        public void setCurrentPassword(String currentPassword) { this.currentPassword = currentPassword; }
+        public String getNewPassword() { return newPassword; }
+        public void setNewPassword(String newPassword) { this.newPassword = newPassword; }
+    }
 }

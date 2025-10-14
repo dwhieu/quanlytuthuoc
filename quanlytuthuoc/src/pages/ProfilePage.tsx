@@ -23,6 +23,14 @@ const ProfilePage: React.FC = () => {
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarSrc, setAvatarSrc] = useState<string | null>(null);
+  // change password state
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
+  const [passwordSaving, setPasswordSaving] = useState(false);
   const location = useLocation();
   const query = new URLSearchParams(location.search);
   const editMode = query.get('edit') === 'true';
@@ -99,6 +107,11 @@ const ProfilePage: React.FC = () => {
           <div className="avatar-buttons mt-2">
             <button className="btn btn-outline-secondary mb-2 w-100" onClick={() => setShowAvatarModal(true)}>Cập nhật ảnh đại diện</button>
             <button className="btn btn-outline-primary w-100" onClick={() => navigate('/profile?edit=true')}>Cập nhật hồ sơ</button>
+            <button className="btn btn-outline-warning mt-2 w-100" onClick={() => {
+              setShowChangePassword(!showChangePassword);
+              setPasswordError(null);
+              setPasswordSuccess(null);
+            }}>{showChangePassword ? 'Đóng' : 'Đổi mật khẩu'}</button>
           </div>
         </div>
 
@@ -205,6 +218,7 @@ const ProfilePage: React.FC = () => {
                 <p><b>Số điện thoại:</b> {profile.phoneNumber}</p>
                 <p><b>Email:</b> {profile.email}</p>
                 <p><b>Username:</b> {profile.username}</p>
+                
               </div>
             )
           )}
@@ -264,6 +278,59 @@ const ProfilePage: React.FC = () => {
               const f = e.target.files?.[0]; if (!f) return;
               const r = new FileReader(); r.onload = () => setAvatarPreview(r.result as string); r.readAsDataURL(f);
             }} />
+          </div>
+        </div>
+      )}
+
+      {/* Change Password Modal */}
+      {showChangePassword && (
+        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
+          <div className="card p-3" style={{ width: 420, maxWidth: '90%' }}>
+            <div className="d-flex justify-content-between align-items-center mb-2">
+              <h5 className="m-0">Đổi mật khẩu</h5>
+              <button className="btn btn-sm btn-light" onClick={() => { setShowChangePassword(false); setPasswordError(null); setPasswordSuccess(null); }}>✕</button>
+            </div>
+            {passwordError && <div className="alert alert-danger">{passwordError}</div>}
+            {passwordSuccess && <div className="alert alert-success">{passwordSuccess}</div>}
+            <div className="mb-2">
+              <label className="form-label">Mật khẩu hiện tại</label>
+              <input type="password" className="form-control" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} />
+            </div>
+            <div className="mb-2">
+              <label className="form-label">Mật khẩu mới</label>
+              <input type="password" className="form-control" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+            </div>
+            <div className="mb-2">
+              <label className="form-label">Xác nhận mật khẩu mới</label>
+              <input type="password" className="form-control" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+            </div>
+            <div className="d-flex gap-2 mt-2">
+              <button className="btn btn-primary" disabled={passwordSaving} onClick={async () => {
+                setPasswordError(null); setPasswordSuccess(null);
+                if (!currentPassword || !newPassword || !confirmPassword) { setPasswordError('Vui lòng điền tất cả các trường'); return; }
+                if (newPassword !== confirmPassword) { setPasswordError('Mật khẩu mới và xác nhận không khớp'); return; }
+                if (newPassword.length < 6) { setPasswordError('Mật khẩu mới phải có ít nhất 6 ký tự'); return; }
+                setPasswordSaving(true);
+                try {
+                  const payload = { currentPassword, newPassword };
+                  const res = await fetch(`http://localhost:8000/api/auth/user/${encodeURIComponent(username || '')}/password`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                  });
+                  const text = await res.text();
+                  if (!res.ok) {
+                    setPasswordError(text || `Lỗi: ${res.status}`);
+                  } else {
+                    setPasswordSuccess('Đổi mật khẩu thành công');
+                    setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
+                    // keep modal open briefly so user sees success, then close
+                    setTimeout(() => { setShowChangePassword(false); setPasswordSuccess(null); }, 900);
+                  }
+                } catch (e: any) {
+                  setPasswordError('Lỗi kết nối');
+                } finally { setPasswordSaving(false); }
+              }}>{passwordSaving ? 'Đang...' : 'Lưu mật khẩu'}</button>
+              <button className="btn btn-outline-secondary" onClick={() => { setShowChangePassword(false); setPasswordError(null); setPasswordSuccess(null); }}>Hủy</button>
+            </div>
           </div>
         </div>
       )}

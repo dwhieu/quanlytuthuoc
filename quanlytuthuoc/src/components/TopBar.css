@@ -29,8 +29,38 @@ input:focus {
   overflow: hidden;
   z-index: 200;
 }
-.avatar-dropdown.show { display: flex; }
+.avatar-dropdown.show { display: flex; animation: dropdownPop 180ms cubic-bezier(.2,.9,.28,1) both; }
+.position-relative:hover .avatar-dropdown { display: flex; animation: dropdownPop 180ms cubic-bezier(.2,.9,.28,1) both; }
+.avatar-dropdown.hide { animation: dropdownHide 120ms ease both; }
+
+@keyframes dropdownPop {
+  from { opacity: 0; transform: translateY(-6px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes dropdownHide {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-4px) scale(.98); }
+}
 .avatar-dropdown .dropdown-item { padding: 10px 12px; cursor: pointer; }
 .avatar-dropdown .dropdown-item:hover { background: #f8f9fa; }
 .dropdown-icon { width: 16px; height: 16px; }
 .user-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+
+/* Notification badge pulse */
+.topbar .badge {
+  width: 10px; height: 10px; padding: 0;
+  transform: translate(-30%, -30%);
+  box-shadow: 0 0 0 rgba(0,0,0,0.05);
+  animation: badgePulse 1400ms ease-in-out infinite;
+}
+@keyframes badgePulse {
+  0% { box-shadow: 0 0 0 0 rgba(220,53,69,0.0); }
+  40% { box-shadow: 0 0 0 6px rgba(220,53,69,0.08); }
+  80% { box-shadow: 0 0 0 10px rgba(220,53,69,0.02); }
+  100% { box-shadow: 0 0 0 0 rgba(220,53,69,0.0); }
+}
+
+/* Respect user preference for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .avatar-dropdown.show, .avatar-dropdown.hide, .topbar .badge, .avatar-box, .card { animation: none !important; transition: none !important; }
+}
