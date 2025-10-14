@@ -66,3 +66,62 @@
 	.login-card{ width: 94%; padding: 22px }
 }
 
+/* --- Hiệu ứng fade in cho card đăng nhập --- */
+@keyframes fadeSlideIn {
+	from {
+		opacity: 0;
+		transform: translateY(40px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.login-card {
+	animation: fadeSlideIn 0.8s ease-out forwards;
+}
+
+/* --- Nút login / register mượt khi hover --- */
+.login-button {
+	transition: all 0.3s ease;
+}
+
+.login-button:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 8px 20px rgba(15, 107, 97, 0.35);
+	filter: brightness(1.05);
+}
+
+/* --- Input focus mượt mà --- */
+.input-group input {
+	transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-group input:focus {
+	border-color: var(--teal-2);
+	box-shadow: 0 0 0 3px rgba(15, 138, 134, 0.15);
+}
+
+/* --- Icon mạng xã hội glow khi hover --- */
+.social-icon {
+	transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.social-icon:hover {
+	transform: scale(1.1);
+	box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+}
+
+/* --- Nền gradient chuyển động nhẹ --- */
+.login-background {
+	background: linear-gradient(135deg, #0f6b61, #0f8a86);
+	background-size: 200% 200%;
+	animation: gradientShift 8s ease infinite;
+}
+
+@keyframes gradientShift {
+	0% { background-position: 0% 50%; }
+	50% { background-position: 100% 50%; }
+	100% { background-position: 0% 50%; }
+}
