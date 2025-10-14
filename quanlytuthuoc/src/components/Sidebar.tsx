@@ -1,11 +1,11 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { FaTachometerAlt, FaPills, FaNotesMedical, FaDownload, FaUser } from "react-icons/fa";
+import { FaHome, FaPills, FaNotesMedical, FaDownload, FaUser } from "react-icons/fa";
 import { ListGroup } from "react-bootstrap";
 import { useNavigate } from 'react-router-dom';
 
 // cast icons to component types to satisfy TS2786
-const FaTachometerAltIcon = FaTachometerAlt as unknown as React.ComponentType<any>;
+const FaHomeIcon = FaHome as unknown as React.ComponentType<any>;
 const FaPillsIcon = FaPills as unknown as React.ComponentType<any>;
 const FaNotesMedicalIcon = FaNotesMedical as unknown as React.ComponentType<any>;
 const FaDownloadIcon = FaDownload as unknown as React.ComponentType<any>;
@@ -14,7 +14,7 @@ const FaUserIcon = FaUser as unknown as React.ComponentType<any>;
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
   const menuItems = [
-    { icon: <FaTachometerAltIcon />, text: "Trang chủ", to: "/" },
+    { icon: <FaHomeIcon />, text: "Trang chủ", to: "/" },
     { icon: <FaUserIcon />, text: "Thông tin cá nhân", to: "/profile" },
     { icon: <FaPillsIcon />, text: "Quản lý Thuốc", to: "/drugs" },
     { icon: <FaNotesMedicalIcon />, text: "Quản lý Bệnh Nhân", to: "/patients" },
