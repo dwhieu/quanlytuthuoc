@@ -11,6 +11,7 @@ interface UserProfile {
   phoneNumber?: string;
   email?: string;
   username?: string;
+  authProvider?: string;
 }
 
 const ProfilePage: React.FC = () => {
@@ -107,11 +108,14 @@ const ProfilePage: React.FC = () => {
           <div className="avatar-buttons mt-2">
             <button className="btn btn-outline-secondary mb-2 w-100" onClick={() => setShowAvatarModal(true)}>Cập nhật ảnh đại diện</button>
             <button className="btn btn-outline-primary w-100" onClick={() => navigate('/profile?edit=true')}>Cập nhật hồ sơ</button>
-            <button className="btn btn-outline-warning mt-2 w-100" onClick={() => {
-              setShowChangePassword(!showChangePassword);
-              setPasswordError(null);
-              setPasswordSuccess(null);
-            }}>{showChangePassword ? 'Đóng' : 'Đổi mật khẩu'}</button>
+            {/* only show change-password if user uses local auth */}
+            {(!profile || !profile.authProvider || profile.authProvider === 'local') && (
+              <button className="btn btn-outline-warning mt-2 w-100" onClick={() => {
+                setShowChangePassword(!showChangePassword);
+                setPasswordError(null);
+                setPasswordSuccess(null);
+              }}>{showChangePassword ? 'Đóng' : 'Đổi mật khẩu'}</button>
+            )}
           </div>
         </div>
 

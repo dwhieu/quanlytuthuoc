@@ -23,4 +23,10 @@ public class User {
     private String username;
 
     private String password;
+    
+    // URL to the user's avatar/profile picture (optional)
+    private String avatarUrl;
+    
+    // Authentication provider: 'local' for username/password, 'google', 'facebook', etc.
+    private String authProvider;
 }

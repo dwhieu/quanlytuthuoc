@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import OAuthCallback from './pages/OAuthCallback';
+import FacebookCallback from './pages/FacebookCallback';
 import Dashboard from './components/Dashboard';
 import Layout from './components/Layout';
 import ProfilePage from './pages/ProfilePage';
@@ -21,6 +23,8 @@ const AppRouter: React.FC = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/oauth/callback" element={<OAuthCallback />} />
+          <Route path="/oauth/facebook-callback" element={<FacebookCallback />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route
             path="/profile"

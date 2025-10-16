@@ -25,6 +25,8 @@ public class AuthService {
             return "Email đã được sử dụng!";
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        // registration via form -> local provider
+        user.setAuthProvider("local");
         userRepository.save(user);
         return "Đăng ký tài khoản thành công!";
     }
@@ -57,11 +59,52 @@ public class AuthService {
         if (newData.getHomeTown() != null) user.setHomeTown(newData.getHomeTown());
         if (newData.getPhoneNumber() != null) user.setPhoneNumber(newData.getPhoneNumber());
         if (newData.getEmail() != null) user.setEmail(newData.getEmail());
+    if (newData.getAvatarUrl() != null) user.setAvatarUrl(newData.getAvatarUrl());
 
         userRepository.save(user);
         // don't return password
         user.setPassword(null);
         return user;
+    }
+
+    /**
+     * Create or return an existing user based on OAuth provider info. Password is left null.
+     * @param username suggested username (e.g., email)
+     * @param fullName display name
+     * @param email email address
+     * @return existing or newly-created User
+     */
+    public User createOrGetUserFromOAuth(String username, String fullName, String email, String avatarUrl, String provider) {
+        User user = userRepository.findByUsername(username).orElse(null);
+        if (user != null) {
+            // if OAuth provides an avatar and we don't have one (or it's different), update it
+            boolean needSave = false;
+            if (avatarUrl != null && (user.getAvatarUrl() == null || !avatarUrl.equals(user.getAvatarUrl()))) {
+                user.setAvatarUrl(avatarUrl);
+                needSave = true;
+            }
+            // ensure authProvider is set for existing oauth-created users
+            if (user.getAuthProvider() == null) {
+                user.setAuthProvider(provider != null ? provider : "google");
+                needSave = true;
+            }
+            if (needSave) {
+                userRepository.save(user);
+            }
+            user.setPassword(null);
+            return user;
+        }
+
+        User u = new User();
+        u.setUsername(username);
+        u.setEmail(email);
+        u.setFullName(fullName != null ? fullName : username);
+        u.setPassword(null);
+        u.setAvatarUrl(avatarUrl);
+        u.setAuthProvider(provider != null ? provider : "google");
+        userRepository.save(u);
+        u.setPassword(null);
+        return u;
     }
 
     /**
@@ -74,6 +117,10 @@ public class AuthService {
     public boolean changePassword(String username, String currentPassword, String newPassword) {
         User user = userRepository.findByUsername(username).orElse(null);
         if (user == null) return false;
+        // Do not allow password changes for OAuth users
+        if (user.getAuthProvider() != null && !"local".equalsIgnoreCase(user.getAuthProvider())) {
+            return false;
+        }
         // verify current password
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) return false;
         // encode and set new password

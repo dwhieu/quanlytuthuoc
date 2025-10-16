@@ -8,8 +8,6 @@ import {
     FaPhone, 
     FaCalendarAlt, 
     FaMapMarkerAlt,
-    FaFacebook, 
-    FaGoogle ,
     FaEye,
     FaEyeSlash
 } from 'react-icons/fa';
@@ -26,8 +24,6 @@ const FaEnvelopeIcon = FaEnvelope as unknown as React.ComponentType<any>;
 const FaPhoneIcon = FaPhone as unknown as React.ComponentType<any>;
 const FaCalendarAltIcon = FaCalendarAlt as unknown as React.ComponentType<any>;
 const FaMapMarkerAltIcon = FaMapMarkerAlt as unknown as React.ComponentType<any>;
-const FaFacebookIcon = FaFacebook as unknown as React.ComponentType<any>;
-const FaGoogleIcon = FaGoogle as unknown as React.ComponentType<any>;
 const FaEyeIcon = FaEye as unknown as React.ComponentType<any>;
 const FaEyeSlashIcon = FaEyeSlash as unknown as React.ComponentType<any>;
 
@@ -105,7 +101,7 @@ const RegisterPage: React.FC = () => {
                     <img src= {logo} alt="Logo" className="app-logo" />
                 </div>
                 
-                <h2>Đăng Ký Tài Khoản Mới</h2>
+                <h2>Đăng Ký Tài Khoản</h2>
 
                 <form onSubmit={handleSubmit}>
                     {/* Họ và Tên */}
@@ -227,13 +223,6 @@ const RegisterPage: React.FC = () => {
                         Đăng Ký
                     </button>
                 </form>
-
-                <p className="social-text">HOẶC ĐĂNG KÝ VỚI</p>
-                <div className="social-login">
-                    <button className="social-icon facebook-icon"><FaFacebookIcon /></button>
-                    <button className="social-icon google-icon"><FaGoogleIcon /></button>
-                </div>
-
                 <div className="register-link">
                     Đã có tài khoản? <a href="/login" onClick={() => navigate('/login')}>**Đăng nhập ngay**</a>
                 </div>

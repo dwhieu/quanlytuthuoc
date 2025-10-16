@@ -4,6 +4,8 @@ interface AuthContextType {
   isLoggedIn: boolean;
   username?: string | null;
   login: (username?: string) => void;
+  loginWithToken?: (tok: string, user?: string) => void;
+  token?: string | null;
   logout: () => void;
 }
 
@@ -28,12 +30,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return null;
     }
   });
+  const [token, setToken] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem('token');
+    } catch {
+      return null;
+    }
+  });
 
   const login = (user?: string) => {
     try {
       localStorage.setItem('isLoggedIn', 'true');
       if (user) localStorage.setItem('username', user);
     } catch {}
+    setIsLoggedIn(true);
+    if (user) setUsername(user);
+  };
+
+  const loginWithToken = (tok: string, user?: string) => {
+    try {
+      localStorage.setItem('token', tok);
+      localStorage.setItem('isLoggedIn', 'true');
+      if (user) localStorage.setItem('username', user);
+    } catch {}
+    setToken(tok);
     setIsLoggedIn(true);
     if (user) setUsername(user);
   };
@@ -48,7 +68,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, username, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, username, login, loginWithToken, token, logout }}>
       {children}
     </AuthContext.Provider>
   );
