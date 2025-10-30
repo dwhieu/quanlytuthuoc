@@ -89,3 +89,59 @@
   .welcome-card:hover, .stat-card:hover, .compact-list .compact-item, .activity-list li{ transition: none !important; }
   .activity-list li:hover .dot{ animation: none !important; }
 }
+
+/* Top selling styles */
+.ts-list{ display:flex; flex-direction:column; gap:10px }
+.ts-item{ padding:6px 0 }
+.ts-progress{ height:8px; background:#eef2f5; border-radius:6px; overflow:hidden }
+.ts-bar{ height:100%; background: linear-gradient(90deg, var(--accent-start), var(--accent-end)); border-radius:6px; box-shadow: 0 4px 10px rgba(30,144,255,0.18); transition: width .6s ease }
+.ts-item:hover .ts-bar{ filter: brightness(1.05) }
+
+/* Recent documents badge chips */
+.badge-chip{ display:inline-block; padding:4px 8px; border-radius:999px; font-size:12px; font-weight:700; margin-right:8px }
+.badge-chip.in{ background: rgba(25,135,84,.12); color:#198754 }
+.badge-chip.out{ background: rgba(13,110,253,.12); color:#0d6efd }
+.badge-chip.edit{ background: rgba(111,66,193,.12); color:#6f42c1 }
+
+/* --- Stock modal styling --- */
+.stock-modal-dialog { max-width: 820px; }
+.stock-modal-content {
+  border: 0;
+  border-radius: 14px;
+  box-shadow: 0 18px 48px rgba(0,0,0,0.18);
+  overflow: hidden;
+}
+.stock-modal-content .modal-header {
+  border: 0;
+  padding: 14px 18px 12px;
+  position: relative;
+}
+.stock-modal-content .modal-header::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-start), var(--accent-end));
+}
+.stock-modal-content .modal-title { font-weight: 700; }
+.stock-modal-content .modal-body { padding: 16px 18px; }
+.stock-modal-content .table thead th {
+  background: #f8fafb;
+  color: #6b7280;
+  font-weight: 700;
+  border-bottom: 1px solid #eef1f4;
+  position: sticky; top: 0; z-index: 1;
+}
+.stock-modal-content .table { margin-bottom: 0; }
+.stock-modal-content .table tbody td { border-color: #f1f3f5; vertical-align: middle; }
+.stock-modal-content .table tbody tr:hover { background: rgba(30,144,255,0.05); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(13,110,253,0.08); }
+.stock-modal-content .table tbody tr { transition: background-color .2s ease, transform .15s ease, box-shadow .2s ease; }
+.stock-modal-content .modal-footer { border: 0; padding: 14px 18px; }
+.stock-modal-content .btn-secondary { border-radius: 10px; }
+
+/* cells */
+.stock-modal-content .drug-name{ font-weight: 600; color: #2b2f32; }
+.stock-modal-content .num{ font-variant-numeric: tabular-nums; }
+.ratio-chip{ display:inline-block; min-width:42px; text-align:center; padding:3px 8px; border-radius:999px; background: rgba(30,144,255,0.1); color:#0d6efd; font-weight:700; font-size:12px }
+.stock-modal-content .text-muted{ color:#9aa3ab !important }
+.stock-total-label{ color:#6b7280; }
