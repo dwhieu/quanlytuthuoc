@@ -14,6 +14,13 @@ input:focus {
   border-color: #0d6efd !important;
 }
 
+/* Hide search bar entirely */
+.topbar-search { display: none !important; width: 0 !important; padding: 0 !important; margin: 0 !important; }
+
+/* Title tweaks: keep subtitle on one line */
+.topbar .fw-bold.text-primary { line-height: 1.1; }
+.topbar .fw-bold.text-primary .small { white-space: nowrap; letter-spacing: 0.4px; }
+
 /* Avatar hover dropdown */
 .avatar-area { padding: 6px 8px; border-radius: 6px; }
 .avatar-area:hover { background: rgba(13,110,253,0.04); }

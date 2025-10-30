@@ -1,0 +1,77 @@
+/* Shared accent colors (fallbacks in case not defined elsewhere) */
+:root{
+  --accent-start: #2ecc71;
+  --accent-end: #1e90ff;
+}
+
+/* Hero gradient card with soft motion */
+.welcome-card{
+  position: relative;
+  overflow: hidden;
+  border: 0;
+  background: linear-gradient(100deg, var(--accent-start), var(--accent-end));
+  background-size: 220% 220%;
+  animation: heroShift 12s ease-in-out infinite;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+}
+.welcome-card::after{ /* soft glint */
+  content: '';
+  position: absolute;
+  top: -20%; left: -20%; right: -20%; bottom: -20%;
+  background: radial-gradient(60% 60% at 20% 30%, rgba(255,255,255,0.18), rgba(255,255,255,0) 60%);
+  pointer-events: none;
+}
+@keyframes heroShift{
+  0%{ background-position: 0% 50%; }
+  50%{ background-position: 100% 50%; }
+  100%{ background-position: 0% 50%; }
+}
+
+/* Stat cards with accent top border and hover lift */
+.stat-card{ position: relative; transition: transform .25s ease, box-shadow .25s ease; }
+.stat-card::before{
+  content: '';
+  position: absolute; inset: 0 0 auto 0; height: 4px; border-radius: 4px 4px 0 0;
+  background: linear-gradient(90deg, var(--accent-start), var(--accent-end));
+}
+.stat-card:hover{ transform: translateY(-3px); box-shadow: 0 12px 28px rgba(0,0,0,0.12); }
+.stat-card .display-4{ font-weight: 700; letter-spacing: .5px; animation: popIn .6s ease both; }
+@keyframes popIn{ from{ opacity:0; transform: translateY(6px) scale(.98);} to{ opacity:1; transform: translateY(0) scale(1);} }
+
+/* Quick actions */
+.quick-actions{ border: 0; }
+.qa-btn{
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: 999px; border: 0; color: #fff; font-weight: 600;
+  background: linear-gradient(90deg, var(--accent-start), var(--accent-end));
+  box-shadow: 0 8px 14px rgba(30,144,255,0.18);
+  transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+.qa-btn:hover{ transform: translateY(-2px); filter: brightness(1.05); box-shadow: 0 12px 22px rgba(30,144,255,0.26); }
+.qa-btn:active{ transform: translateY(0); }
+.qa-btn svg{ width: 16px; height: 16px; }
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .welcome-card, .stat-card, .qa-btn{ animation: none !important; transition: none !important; }
+}
+
+/* Hide old quick actions block */
+.quick-actions{ display: none !important; }
+
+/* Compact info lists */
+.card-title-compact{ font-weight: 700; margin-bottom: 10px; }
+.compact-list .compact-item{ display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom: 1px dashed #eef1f4; }
+.compact-list .compact-item:last-child{ border-bottom: 0; }
+.item-name{ color:#2b2f32; }
+.badge-soft{ padding:4px 10px; border-radius:999px; font-weight:700; font-size:12px; }
+.badge-soft.danger{ background: rgba(220,53,69,.12); color: #dc3545; }
+.badge-soft.warn{ background: rgba(255,193,7,.16); color: #d39e00; }
+.badge-soft.okay{ background: rgba(40,167,69,.14); color: #28a745; }
+
+/* Activity list */
+.activity-list li{ display:flex; align-items:center; gap:10px; padding:8px 0; }
+.dot{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+.dot-in{ background:#28a745; }
+.dot-out{ background:#0d6efd; }
+.dot-edit{ background:#6f42c1; }

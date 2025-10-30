@@ -3,11 +3,16 @@ import { Card, Row, Col } from "react-bootstrap";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import DrugChart from "./DrugChart";
+import "./Dashboard.css";
+import CalendarCard from "./CalendarCard";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
 };
+
+//
 
 const Dashboard: React.FC = () => {
   const { fullName, username } = useAuth();
@@ -66,7 +71,7 @@ const Dashboard: React.FC = () => {
         animate="visible"
         className="mb-4"
       >
-        <Card className="bg-primary text-white p-4">
+        <Card className="bg-primary text-white p-4 welcome-card">
           <h2 className="mb-2">Xin chào {getLastName(fullName)}</h2>
           <h4>Mừng quay trở lại!</h4>
         </Card>
@@ -81,7 +86,7 @@ const Dashboard: React.FC = () => {
             animate="visible"
             transition={{ delay: 0.2 }}
           >
-            <Card className="shadow-sm h-100">
+            <Card className="shadow-sm h-100 stat-card">
               <Card.Body className="d-flex flex-column">
                 <Card.Title>Số lượng bệnh nhân</Card.Title>
                 <div className="text-center my-3">
@@ -108,7 +113,7 @@ const Dashboard: React.FC = () => {
             animate="visible"
             transition={{ delay: 0.3 }}
           >
-            <Card className="shadow-sm h-100">
+            <Card className="shadow-sm h-100 stat-card">
               <Card.Body className="d-flex flex-column">
                 <Card.Title>Tổng số lượng thuốc trong kho</Card.Title>
                 <div className="text-center my-3">
@@ -135,7 +140,7 @@ const Dashboard: React.FC = () => {
             animate="visible"
             transition={{ delay: 0.4 }}
           >
-            <Card className="shadow-sm h-100">
+            <Card className="shadow-sm h-100 stat-card">
               <Card.Body className="d-flex flex-column">
                 <Card.Title>Số lượng thuốc đã nhập</Card.Title>
                 <div className="text-center my-3">
@@ -155,8 +160,66 @@ const Dashboard: React.FC = () => {
           </motion.div>
         </Col>
       </Row>
+
+      {/* Home insights (new sections) */}
+      <Row className="g-3">
+        <Col md={7}>
+          <motion.div variants={fadeInUp} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
+            <Card className="shadow-sm p-0 alert-card">
+              <Card.Body>
+                <div className="card-title-compact">Cảnh báo tồn kho thấp</div>
+                <ul className="list-unstyled compact-list mb-0">
+                  <li className="compact-item"><span className="item-name">Paracetamol 500mg</span><span className="badge-soft danger">Còn 12</span></li>
+                  <li className="compact-item"><span className="item-name">Amoxicillin 250mg</span><span className="badge-soft warn">Còn 28</span></li>
+                  <li className="compact-item"><span className="item-name">Vitamin C 1000mg</span><span className="badge-soft okay">Còn 55</span></li>
+                </ul>
+              </Card.Body>
+            </Card>
+          </motion.div>
+
+          <motion.div variants={fadeInUp} initial="hidden" animate="visible" transition={{ delay: 0.2 }}>
+            <Card className="shadow-sm p-0 mt-3 alert-card">
+              <Card.Body>
+                <div className="card-title-compact">Sắp hết hạn</div>
+                <ul className="list-unstyled compact-list mb-0">
+                  <li className="compact-item"><span className="item-name">Cefixime 100mg</span><span className="badge-soft warn">Còn 15 ngày</span></li>
+                  <li className="compact-item"><span className="item-name">Siro ho Prospan</span><span className="badge-soft danger">Còn 5 ngày</span></li>
+                  <li className="compact-item"><span className="item-name">Omeprazole 20mg</span><span className="badge-soft okay">4Còn 5 ngày</span></li>
+                </ul>
+              </Card.Body>
+            </Card>
+          </motion.div>
+
+          <motion.div variants={fadeInUp} initial="hidden" animate="visible" transition={{ delay: 0.3 }}>
+            <Card className="shadow-sm p-0 mt-3">
+              <Card.Body>
+                <div className="card-title-compact">Hoạt động gần đây</div>
+                <ul className="list-unstyled activity-list mb-0">
+                  <li><span className="dot dot-in"></span> Nhập 200 hộp Paracetamol • 10:20</li>
+                  <li><span className="dot dot-out"></span> Xuất 30 vỉ Vitamin C • 09:05</li>
+                  <li><span className="dot dot-edit"></span> Cập nhật giá Amoxicillin • Yesterday</li>
+                </ul>
+              </Card.Body>
+            </Card>
+          </motion.div>
+        </Col>
+        <Col md={5}>
+          <motion.div variants={fadeInUp} initial="hidden" animate="visible" transition={{ delay: 0.2 }}>
+            <CalendarCard />
+          </motion.div>
+          <motion.div variants={fadeInUp} initial="hidden" animate="visible" transition={{ delay: 0.25 }}>
+            <div className="mt-3">
+              <DrugChart />
+            </div>
+          </motion.div>
+        </Col>
+      </Row>
+
     </div>
   );
 };
 
 export default Dashboard;
+
+
+
