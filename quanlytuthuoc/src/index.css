@@ -5,9 +5,16 @@ body {
 }
 
 .sidebar {
+  /* Keep rounded top but avoid gap at bottom when scrolling */
   border-top-right-radius: 20px;
-  border-bottom-right-radius: 20px;
+  border-bottom-right-radius: 0;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+
+  /* Make sidebar occupy full viewport height and stay in view */
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
 }
 
 .card {
@@ -18,4 +25,33 @@ body {
 .card:hover {
   transform: translateY(-4px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Layout responsiveness */
+.app-layout { min-height: 100vh; }
+.app-main { min-width: 0; }
+.app-sidebar { width: 250px; flex: 0 0 auto; }
+
+/* Search width default */
+.topbar-search { width: 40%; }
+
+@media (max-width: 1200px) {
+  .app-sidebar { width: 220px; }
+}
+
+@media (max-width: 992px) {
+  .app-sidebar { width: 200px; }
+  .topbar-search { width: 32%; }
+}
+
+@media (max-width: 768px) {
+  /* Collapse sidebar to icons */
+  .app-sidebar { width: 72px; }
+  .sidebar { padding-left: 12px !important; padding-right: 12px !important; }
+  .sidebar .list-group-item { justify-content: center; }
+  .sidebar .sidebar-text { display: none; }
+  .sidebar .sidebar-icon { font-size: 1.05rem; }
+  .sidebar h5 { display: none; }
+  /* Hide the large search on small screens */
+  .topbar-search { display: none; }
 }

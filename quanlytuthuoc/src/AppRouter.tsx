@@ -6,6 +6,7 @@ import RegisterPage from './pages/RegisterPage';
 import OAuthCallback from './pages/OAuthCallback';
 import FacebookCallback from './pages/FacebookCallback';
 import Dashboard from './components/Dashboard';
+import StatisticalPage from './pages/StatisticalPage';
 import Layout from './components/Layout';
 import ProfilePage from './pages/ProfilePage';
 
@@ -42,6 +43,16 @@ const AppRouter: React.FC = () => {
               <RequireAuth>
                 <Layout>
                   <Dashboard />
+                </Layout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/statistical"
+            element={
+              <RequireAuth>
+                <Layout>
+                  <StatisticalPage />
                 </Layout>
               </RequireAuth>
             }

@@ -27,9 +27,12 @@ const TopBar: React.FC = () => {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const [avatarSrc, setAvatarSrc] = useState<string>(() =>
-    typeof window !== 'undefined' ? (localStorage.getItem('avatar') || '/logo192.png') : '/logo192.png'
-  );
+  const [avatarSrc, setAvatarSrc] = useState<string>(() => {
+    // Chỉ sử dụng avatar từ localStorage nếu user đã đăng nhập
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const savedAvatar = localStorage.getItem('avatar');
+    return isLoggedIn && savedAvatar ? savedAvatar : '/logo192.png';
+  });
 
   // close when clicking outside
   useEffect(() => {
@@ -40,13 +43,23 @@ const TopBar: React.FC = () => {
     }
     document.addEventListener('mousedown', handleClickOutside);
     // listen to avatar changes
-  function onAvatarChange() { setAvatarSrc(localStorage.getItem('avatar') || '/logo192.png'); }
+  function onAvatarChange() {
+      try {
+        const key = username ? `avatar:${username}` : 'avatar';
+        const value = localStorage.getItem(key) || localStorage.getItem('avatar') || '/logo192.png';
+        setAvatarSrc(value);
+      } catch {
+        setAvatarSrc('/logo192.png');
+      }
+    }
     window.addEventListener('avatarChanged', onAvatarChange as EventListener);
+    // initial load for current user
+    onAvatarChange();
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       window.removeEventListener('avatarChanged', onAvatarChange as EventListener);
     };
-  }, []);
+  }, [username]);
 
   return (
     <div className="topbar d-flex align-items-center justify-content-between bg-white shadow-sm px-4 py-2">
@@ -64,7 +77,7 @@ const TopBar: React.FC = () => {
       </div>
 
       {/* Thanh tìm kiếm */}
-      <InputGroup style={{ width: "40%" }}>
+      <InputGroup className="topbar-search">
         <InputGroup.Text className="bg-white border-end-0">
           <FaSearchIcon className="text-muted" />
         </InputGroup.Text>

@@ -150,12 +150,17 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody User loginRequest) {
+    public ResponseEntity<?> login(@RequestBody User loginRequest) {
         String message = authService.login(loginRequest.getUsername(), loginRequest.getPassword());
         if (message == null) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi máy chủ");
         }
         if (message.equals("Đăng nhập thành công!")) {
+            User user = authService.getByUsername(loginRequest.getUsername());
+            if (user != null) {
+                user.setPassword(null); // Don't send password back
+                return ResponseEntity.ok(user);
+            }
             return ResponseEntity.ok(message);
         }
         if (message.equals("Tài khoản không tồn tại!")) {

@@ -44,7 +44,11 @@ const OAuthCallback: React.FC = () => {
         if (data.token) {
           try { localStorage.setItem('token', data.token); } catch {}
           try { localStorage.setItem('isLoggedIn', 'true'); } catch {}
-          if (data.avatar) try { localStorage.setItem('avatar', data.avatar); window.dispatchEvent(new Event('avatarChanged')); } catch {}
+          if (data.avatar) try {
+            const key = data.username ? `avatar:${data.username}` : 'avatar';
+            localStorage.setItem(key, data.avatar);
+            window.dispatchEvent(new Event('avatarChanged'));
+          } catch {}
           if (loginWithToken) loginWithToken(data.token, data.username); else if (data.username) login(data.username);
         }
         navigate('/');

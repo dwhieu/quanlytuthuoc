@@ -41,19 +41,29 @@ const LoginPage: React.FC = () => {
             });
 
             // Java Controller trả về thông báo (text) hoặc mã lỗi
-            const message = await response.text(); 
+            const data = await response.json();
 
-            if (response.ok) { 
-                // Xử lý thành công (hiện backend trả message, chưa có token JWT)
-                // Không lưu message làm token; lưu một cờ đơn giản nếu cần
-                // lưu username để lấy profile
+            if (response.ok) {
                 localStorage.setItem('isLoggedIn', 'true');
-                login(username);
-                alert(message || 'Đăng nhập thành công!');
-                navigate('/'); 
+                // Xóa avatar cũ khi đăng nhập thông thường
+                // Gi? avatar theo t?ng t�i kho?n; kh�ng x�a to�n c?c.
+                
+                // Nếu response là User object
+                if (data.username) {
+                    // Luu avatar neu backend tra ve
+                    if (data.avatar) { try { localStorage.setItem(`avatar:${data.username}`, data.avatar); } catch {} window.dispatchEvent(new Event('avatarChanged')); }
+                    await login(data.username, data.fullName);
+                    alert('Đăng nhập thành công!');
+                    navigate('/');
+                } else {
+                    // Fallback for old response format
+                    await login(username);
+                    alert(data || 'Đăng nhập thành công!');
+                    navigate('/');
+                }
             } else {
-                // Xử lý lỗi từ API (ví dụ: "Mật khẩu không đúng!")
-                alert(`Đăng nhập thất bại: ${message}`);
+                // Xử lý lỗi từ API
+                alert(`Đăng nhập thất bại: ${typeof data === 'string' ? data : 'Lỗi không xác định'}`);
             }
         } catch (error) {
             console.error('Lỗi kết nối API:', error);
@@ -118,8 +128,8 @@ const LoginPage: React.FC = () => {
                                     try { data = JSON.parse(text); } catch { data = {}; }
                                     if (data.token) try { localStorage.setItem('token', data.token); } catch {}
                                     try { localStorage.setItem('isLoggedIn', 'true'); } catch {}
-                                    if (data.username) login(data.username);
-                                    if (data.avatar) { try { localStorage.setItem('avatar', data.avatar); } catch {} window.dispatchEvent(new Event('avatarChanged')); }
+                                    if (data.username) login(data.username, data.fullName);
+                                    if (data.avatar && data.username) { try { localStorage.setItem(`avatar:${data.username}`, data.avatar); } catch {} window.dispatchEvent(new Event('avatarChanged')); }
                                     window.removeEventListener('message', messageHandler);
                                     try { popup?.close(); } catch {}
                                     navigate('/');
@@ -177,10 +187,9 @@ const LoginPage: React.FC = () => {
                                 try { data = JSON.parse(text); } catch { data = {}; }
                                 if (data.token) try { localStorage.setItem('token', data.token); } catch {}
                                 try { localStorage.setItem('isLoggedIn', 'true'); } catch {}
-                                if (data.username) login(data.username);
+                                if (data.username) login(data.username, data.fullName);
                                 if (data.avatar) {
-                                    try { localStorage.setItem('avatar', data.avatar); } catch {}
-                                    window.dispatchEvent(new Event('avatarChanged'));
+                                    if (data.username) { try { localStorage.setItem(`avatar:${data.username}`, data.avatar); } catch {} window.dispatchEvent(new Event('avatarChanged')); }
                                 }
                                 window.removeEventListener('message', messageHandler);
                                 popup?.close();

@@ -8,11 +8,11 @@ interface Props {
 
 const Layout: React.FC<Props> = ({ children }) => {
   return (
-    <div className="d-flex">
-      <aside style={{ width: 250 }}>
+    <div className="app-layout d-flex">
+      <aside className="app-sidebar">
         <Sidebar />
       </aside>
-      <main style={{ flex: 1 }}>
+      <main className="app-main flex-grow-1">
         <TopBar />
         <div className="p-4">{children}</div>
       </main>

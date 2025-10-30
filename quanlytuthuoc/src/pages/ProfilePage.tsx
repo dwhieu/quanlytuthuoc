@@ -79,21 +79,23 @@ const ProfilePage: React.FC = () => {
   // load avatar from localStorage and listen for changes
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('avatar');
+      const key = username ? `avatar:${username}` : 'avatar';
+      const saved = localStorage.getItem(key) || localStorage.getItem('avatar');
       setAvatarSrc(saved);
     } catch (e) {
       setAvatarSrc(null);
     }
     const onChange = () => {
       try {
-        setAvatarSrc(localStorage.getItem('avatar'));
+        const key = username ? `avatar:${username}` : 'avatar';
+        setAvatarSrc(localStorage.getItem(key) || localStorage.getItem('avatar'));
       } catch {
         setAvatarSrc(null);
       }
     };
     window.addEventListener('avatarChanged', onChange as EventListener);
     return () => window.removeEventListener('avatarChanged', onChange as EventListener);
-  }, []);
+  }, [username]);
 
   if (!username) return <div className="p-4">Vui lòng đăng nhập để xem thông tin.</div>;
 
@@ -222,6 +224,7 @@ const ProfilePage: React.FC = () => {
                 <p><b>Số điện thoại:</b> {profile.phoneNumber}</p>
                 <p><b>Email:</b> {profile.email}</p>
                 <p><b>Username:</b> {profile.username}</p>
+                <p><b>Chức vụ: </b>Quản lý</p>
                 
               </div>
             )
@@ -265,7 +268,7 @@ const ProfilePage: React.FC = () => {
                 <div className="modal-actions mt-3">
                   <button className="btn btn-danger" onClick={() => {
                     if (avatarPreview) {
-                      try { localStorage.setItem('avatar', avatarPreview); } catch {}
+                      try { const key = username ? `avatar:${username}` : 'avatar'; localStorage.setItem(key, avatarPreview); } catch {}
                       window.dispatchEvent(new Event('avatarChanged'));
                     }
                     setShowAvatarModal(false);
