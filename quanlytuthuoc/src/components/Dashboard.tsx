@@ -73,7 +73,7 @@ const Dashboard: React.FC = () => {
       >
         <Card className="bg-primary text-white p-4 welcome-card">
           <h2 className="mb-2">Xin chào {getLastName(fullName)}</h2>
-          <h4>Mừng quay trở lại!</h4>
+          <h4>Chào mừng quay trở lại!</h4>
         </Card>
       </motion.div>
 
@@ -184,7 +184,7 @@ const Dashboard: React.FC = () => {
                 <ul className="list-unstyled compact-list mb-0">
                   <li className="compact-item"><span className="item-name">Cefixime 100mg</span><span className="badge-soft warn">Còn 15 ngày</span></li>
                   <li className="compact-item"><span className="item-name">Siro ho Prospan</span><span className="badge-soft danger">Còn 5 ngày</span></li>
-                  <li className="compact-item"><span className="item-name">Omeprazole 20mg</span><span className="badge-soft okay">4Còn 5 ngày</span></li>
+                  <li className="compact-item"><span className="item-name">Omeprazole 20mg</span><span className="badge-soft okay">Còn 5 ngày</span></li>
                 </ul>
               </Card.Body>
             </Card>
@@ -197,7 +197,7 @@ const Dashboard: React.FC = () => {
                 <ul className="list-unstyled activity-list mb-0">
                   <li><span className="dot dot-in"></span> Nhập 200 hộp Paracetamol • 10:20</li>
                   <li><span className="dot dot-out"></span> Xuất 30 vỉ Vitamin C • 09:05</li>
-                  <li><span className="dot dot-edit"></span> Cập nhật giá Amoxicillin • Yesterday</li>
+                  <li><span className="dot dot-edit"></span> Cập nhật giá Amoxicillin • Hôm qua</li>
                 </ul>
               </Card.Body>
             </Card>

@@ -63,15 +63,21 @@ const StatisticalPage: React.FC = () => {
   const [rangeTop, setRangeTop] = React.useState<RangeKey>("6m");
   const [rangeBottom, setRangeBottom] = React.useState<RangeKey>("1y");
 
-  const patientsData = React.useMemo(() => genPatientsByMonth(rangeTop), [rangeTop]);
+  // Dữ liệu theo bộ lọc phía trên (dùng cho thẻ tổng quan)
+  const patientsDataTop = React.useMemo(() => genPatientsByMonth(rangeTop), [rangeTop]);
+  const drugStatusTop = React.useMemo(() => genDrugStatus(rangeTop), [rangeTop]);
+
+  // Dữ liệu theo bộ lọc phía dưới (dùng cho biểu đồ bên dưới)
+  const patientsDataBottom = React.useMemo(() => genPatientsByMonth(rangeBottom), [rangeBottom]);
   const drugStatusData = React.useMemo(() => genDrugStatus(rangeBottom), [rangeBottom]);
 
+  // Tính tổng chỉ dựa trên bộ lọc phía trên
   const totals = React.useMemo(() => {
-    const patients = patientsData.reduce((s, d) => s + d.patients, 0);
-    const inStock = drugStatusData.reduce((s, d) => s + d.inStock, 0);
+    const patients = patientsDataTop.reduce((s, d) => s + d.patients, 0);
+    const inStock = drugStatusTop.reduce((s, d) => s + d.inStock, 0);
     const suppliers = 18; // demo
     return { patients, inStock, suppliers };
-  }, [patientsData, drugStatusData]);
+  }, [patientsDataTop, drugStatusTop]);
 
   return (
     <div className="p-2">
@@ -82,9 +88,9 @@ const StatisticalPage: React.FC = () => {
       {/* Top summary with filter */}
       <Card className="mb-4 shadow-sm">
         <Card.Body>
-          <div className="d-flex align-items-center justify-content-between mb-3">
+          <div className="d-flex align-items-center gap-2 mb-3">
             <div className="fw-semibold">Bộ lọc</div>
-            <Form.Select style={{ width: 220 }} value={rangeTop} onChange={(e) => setRangeTop(e.target.value as RangeKey)}>
+            <Form.Select size="sm" style={{ width: 220 }} value={rangeTop} onChange={(e) => setRangeTop(e.target.value as RangeKey)}>
               <option value="7d">7 ngày gần nhất</option>
               <option value="1m">1 tháng gần nhất</option>
               <option value="6m">6 tháng gần nhất</option>
@@ -122,9 +128,9 @@ const StatisticalPage: React.FC = () => {
       {/* Bottom charts with its own filter */}
       <Card className="mb-4 shadow-sm">
         <Card.Body>
-          <div className="d-flex align-items-center justify-content-between mb-3">
+          <div className="d-flex align-items-center gap-2 mb-3">
             <div className="fw-semibold">Bộ lọc</div>
-            <Form.Select style={{ width: 220 }} value={rangeBottom} onChange={(e) => setRangeBottom(e.target.value as RangeKey)}>
+            <Form.Select size="sm" style={{ width: 220 }} value={rangeBottom} onChange={(e) => setRangeBottom(e.target.value as RangeKey)}>
               <option value="7d">7 ngày gần nhất</option>
               <option value="1m">1 tháng gần nhất</option>
               <option value="6m">6 tháng gần nhất</option>
@@ -140,7 +146,7 @@ const StatisticalPage: React.FC = () => {
                     <div className="fw-semibold mb-2">Biểu đồ cột thể hiện số lượng bệnh nhân</div>
                     <div style={{ width: "100%", height: 300 }}>
                       <ResponsiveContainer>
-                        <BarChart data={patientsData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <BarChart data={patientsDataBottom} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                           <XAxis dataKey="label" tick={{ fontSize: 12 }} />
                           <YAxis tick={{ fontSize: 12 }} />
@@ -186,4 +192,5 @@ const StatisticalPage: React.FC = () => {
 };
 
 export default StatisticalPage;
+
 

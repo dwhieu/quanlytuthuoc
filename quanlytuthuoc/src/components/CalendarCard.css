@@ -10,10 +10,12 @@
 
 .cal-grid{ display:grid; grid-template-columns: repeat(7,1fr); gap: 6px }
 .cal-weekday{ text-align:center; font-weight:600; color:#8a8f93; font-size: 0.75rem; padding:2px 0 }
-.cal-cell{ text-align:center; padding:4px 0 8px; border-radius:8px }
+.cal-cell{ text-align:center; padding:4px 0 8px; border-radius:8px; transition: background-color .2s ease }
 .cal-cell.dim{ opacity:0.45 }
-.cal-date{ display:inline-block; min-width:24px; height:24px; line-height:24px; border-radius:6px; font-weight:600; font-size:0.85rem }
+.cal-date{ display:inline-block; min-width:24px; height:24px; line-height:24px; border-radius:6px; font-weight:600; font-size:0.85rem; transition: transform .2s ease, box-shadow .2s ease }
 .cal-date.today{ background: linear-gradient(90deg, var(--accent-start, #2ecc71), var(--accent-end, #1e90ff)); color:#fff; box-shadow: 0 2px 8px rgba(30,144,255,0.25) }
 .cal-dots{ display:flex; justify-content:center; gap:3px; flex-wrap:wrap; min-height:8px; margin-top:2px }
 .dot{ width:5px; height:5px; border-radius:50%; background: var(--accent-end, #1e90ff); display:inline-block; opacity: .9 }
 .more{ font-size:0.65rem; color:#6c757d; margin-left:4px }
+.cal-cell:hover{ background: rgba(30,144,255,0.06) }
+.cal-cell:hover .cal-date{ transform: translateY(-1px); box-shadow: 0 4px 10px rgba(30,144,255,0.25) }
