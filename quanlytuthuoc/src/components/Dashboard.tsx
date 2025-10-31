@@ -237,7 +237,7 @@ const Dashboard: React.FC = () => {
                 <ul className="list-unstyled activity-list mb-0">
                   <li><span className="dot dot-in"></span> Nhập 200 hộp Paracetamol • 10:20</li>
                   <li><span className="dot dot-out"></span> Xuất 30 vỉ Vitamin C • 09:05</li>
-                  <li><span className="dot dot-edit"></span> Cập nhật giá Amoxicillin • Hôm qua</li>
+                  <li><span className="dot dot-edit"></span> Cập nhật Amoxicillin • Hôm qua</li>
                 </ul>
               </Card.Body>
             </Card>

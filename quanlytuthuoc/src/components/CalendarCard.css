@@ -1,7 +1,6 @@
 .calendar-card{ border:0; padding:12px !important; }
 .calendar-header .calendar-title{ font-weight:700; }
-.calendar-header .calendar-all{ color: var(--accent-end, #1e90ff); font-size: 0.85rem; text-decoration:none }
-.calendar-header .calendar-all:hover{ text-decoration: underline; }
+/* removed .calendar-all link styles as the link was deleted */
 
 .calendar-nav{ user-select:none }
 .cal-month{ font-weight:600; font-size: 0.95rem }

@@ -36,7 +36,7 @@ const CalendarCard: React.FC<{ events?: EventMap }>=({ events = defaultEvents })
   const today = new Date();
 
   const matrix = React.useMemo(()=>getMonthMatrix(cursor),[cursor]);
-  const ymTitle = `Tháng ${pad(cursor.getMonth()+1)}/${cursor.getFullYear()}`;
+  const ymTitle = `Thang ${pad(cursor.getMonth()+1)}/${cursor.getFullYear()}`;
 
   const prevMonth = () => setCursor(d => new Date(d.getFullYear(), d.getMonth()-1, 1));
   const nextMonth = () => setCursor(d => new Date(d.getFullYear(), d.getMonth()+1, 1));
@@ -46,13 +46,12 @@ const CalendarCard: React.FC<{ events?: EventMap }>=({ events = defaultEvents })
   return (
     <div className="calendar-card shadow-sm bg-white rounded-3 p-3">
       <div className="calendar-header d-flex justify-content-between align-items-center mb-2">
-        <div className="calendar-title">Lịch</div>
-        <a href="#" className="calendar-all">Xem tất cả</a>
+        <div className="calendar-title">Lich</div>
       </div>
       <div className="calendar-nav d-flex align-items-center justify-content-between mb-2">
-        <button className="cal-nav-btn" onClick={prevMonth} aria-label="Tháng trước">&lt;</button>
+        <button className="cal-nav-btn" onClick={prevMonth} aria-label="Thang truoc">&lt;</button>
         <div className="cal-month">{ymTitle}</div>
-        <button className="cal-nav-btn" onClick={nextMonth} aria-label="Tháng sau">&gt;</button>
+        <button className="cal-nav-btn" onClick={nextMonth} aria-label="Thang sau">&gt;</button>
       </div>
       <div className="cal-grid">
         {weekDays.map(w => (<div key={w} className="cal-weekday">{w}</div>))}
