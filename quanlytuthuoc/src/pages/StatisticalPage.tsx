@@ -82,7 +82,7 @@ const StatisticalPage: React.FC = () => {
   return (
     <div className="p-2">
       <motion.div variants={fadeInUp} initial="hidden" animate="visible" className="mb-3">
-        <h4 className="fw-semibold">Thống kê</h4>
+        <h4 className="fw-semibold">THỐNG KÊ</h4>
       </motion.div>
 
       {/* Top summary with filter */}
