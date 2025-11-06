@@ -9,6 +9,8 @@ import Dashboard from './components/Dashboard';
 import StatisticalPage from './pages/StatisticalPage';
 import Layout from './components/Layout';
 import ProfilePage from './pages/ProfilePage';
+import DrugsPage from './pages/DrugsPage';
+import PatientsPage from './pages/PatientsPage';
 
 const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isLoggedIn } = useAuth();
@@ -53,6 +55,26 @@ const AppRouter: React.FC = () => {
               <RequireAuth>
                 <Layout>
                   <StatisticalPage />
+                </Layout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/drugs"
+            element={
+              <RequireAuth>
+                <Layout>
+                  <DrugsPage />
+                </Layout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/patients"
+            element={
+              <RequireAuth>
+                <Layout>
+                  <PatientsPage />
                 </Layout>
               </RequireAuth>
             }

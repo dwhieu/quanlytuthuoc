@@ -1,0 +1,94 @@
+.patients-page {
+  padding: 20px;
+}
+
+.page-header {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.action-buttons button {
+  min-width: 100px;
+}
+
+/* Table styling */
+.table {
+  background-color: white;
+}
+
+.table thead {
+  background-color: #f8f9fa;
+}
+
+.table th {
+  font-weight: 600;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.table td {
+  vertical-align: middle;
+  text-align: center;
+}
+
+/* Icons trong cột Thao tác */
+.action-icons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.icon-edit {
+  color: #0d6efd;
+  cursor: pointer;
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.icon-edit:hover {
+  color: #0a58ca;
+}
+
+.icon-delete {
+  color: #dc3545;
+  cursor: pointer;
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.icon-delete:hover {
+  color: #bb2d3b;
+}
+
+/* Badge tình trạng sức khỏe */
+.status-badge {
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.status-stable {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+.status-warning {
+  background-color: #fff3cd;
+  color: #664d03;
+}
+
