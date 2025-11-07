@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { FaHome, FaPills, FaNotesMedical, FaUser } from "react-icons/fa";
 import { FiFileText } from "react-icons/fi";
 import { ListGroup } from "react-bootstrap";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 // cast icons to component types to satisfy TS2786
 const FaHomeIcon = FaHome as unknown as React.ComponentType<any>;
@@ -15,6 +15,7 @@ const FiFileTextIcon = FiFileText as unknown as React.ComponentType<any>;
 
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const menuItems = [
     { icon: <FaHomeIcon />, text: "Trang chủ", to: "/" },
     { icon: <FaUserIcon />, text: "Thông tin cá nhân", to: "/profile" },
@@ -28,22 +29,32 @@ const Sidebar: React.FC = () => {
       <h5 className="mb-4 text-center fw-bold">PHARMACY INVENTORY</h5>
 
       <ListGroup variant="flush">
-        {menuItems.map((item, i) => (
-          <motion.div
-            key={i}
-            whileHover={{ scale: 1.05, backgroundColor: "#0b5ed7" }}
-            transition={{ type: "spring", stiffness: 250 }}
-          >
-            <ListGroup.Item
-              action
-              onClick={() => item.to && navigate(item.to)}
-              className="bg-primary text-white border-0 d-flex align-items-center py-2"
+        {menuItems.map((item, i) => {
+          const isActive = location.pathname === item.to;
+          return (
+            <motion.div
+              key={i}
+              whileHover={{
+                scale: 1.05,
+                backgroundColor: isActive ? "" : "#0b5ed7",
+              }}
+              transition={{ type: "spring", stiffness: 250 }}
+              style={{
+                backgroundColor: isActive ? "#0b5ed7" : "transparent",
+                borderRadius: "5px",
+              }}
             >
-              <span className="me-2 sidebar-icon">{item.icon}</span>
-              <span className="sidebar-text">{item.text}</span>
-            </ListGroup.Item>
-          </motion.div>
-        ))}
+              <ListGroup.Item
+                action
+                onClick={() => item.to && navigate(item.to)}
+                className="bg-transparent text-white border-0 d-flex align-items-center py-2"
+              >
+                <span className="me-2 sidebar-icon">{item.icon}</span>
+                <span className="sidebar-text">{item.text}</span>
+              </ListGroup.Item>
+            </motion.div>
+          );
+        })}
       </ListGroup>
     </div>
   );
