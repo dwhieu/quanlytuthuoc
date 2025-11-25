@@ -17,7 +17,7 @@ const Sidebar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const menuItems = [
-    { icon: <FaHomeIcon />, text: "Trang chủ", to: "/" },
+    { icon: <FaHomeIcon />, text: "Trang chủ", to: "/dashboard" },
     { icon: <FaUserIcon />, text: "Thông tin cá nhân", to: "/profile" },
     { icon: <FaPillsIcon />, text: "Quản lý Thuốc", to: "/drugs" },
     { icon: <FaNotesMedicalIcon />, text: "Quản lý Bệnh Nhân", to: "/patients" },

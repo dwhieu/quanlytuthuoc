@@ -15,7 +15,7 @@ const FaFacebookIcon = FaFacebook as unknown as React.ComponentType<any>;
 const FaGoogleIcon = FaGoogle as unknown as React.ComponentType<any>;
 
 const LoginPage: React.FC = () => {
-    const { login, isLoggedIn } = useAuth();
+    const { login } = useAuth();
     const navigate = useNavigate();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -54,12 +54,12 @@ const LoginPage: React.FC = () => {
                     if (data.avatar) { try { localStorage.setItem(`avatar:${data.username}`, data.avatar); } catch {} window.dispatchEvent(new Event('avatarChanged')); }
                     await login(data.username, data.fullName);
                     alert('Đăng nhập thành công!');
-                    navigate('/');
+                    navigate('/dashboard');
                 } else {
                     // Fallback for old response format
                     await login(username);
                     alert(data || 'Đăng nhập thành công!');
-                    navigate('/');
+                    navigate('/dashboard');
                 }
             } else {
                 // Xử lý lỗi từ API
@@ -70,13 +70,6 @@ const LoginPage: React.FC = () => {
             alert('Lỗi kết nối! Vui lòng kiểm tra máy chủ Java đang chạy trên Port 8000.');
         }
     };
-
-    // If already logged in, redirect to home
-    React.useEffect(() => {
-        if (isLoggedIn) {
-            navigate('/');
-        }
-    }, [isLoggedIn, navigate]);
 
     const FACEBOOK_APP_ID = '772096055995000';
 
@@ -132,7 +125,7 @@ const LoginPage: React.FC = () => {
                                     if (data.avatar && data.username) { try { localStorage.setItem(`avatar:${data.username}`, data.avatar); } catch {} window.dispatchEvent(new Event('avatarChanged')); }
                                     window.removeEventListener('message', messageHandler);
                                     try { popup?.close(); } catch {}
-                                    navigate('/');
+                                    navigate('/dashboard');
                                 } catch (err) { alert('Lỗi kết nối Google OAuth: ' + err); }
                             })();
                             return;
@@ -146,7 +139,7 @@ const LoginPage: React.FC = () => {
                             // Đóng popup nếu vẫn còn mở
                             try { popup?.close(); } catch {}
                             // Điều hướng đến bảng điều khiển
-                            navigate('/');
+                            navigate('/dashboard');
                         }
                 };
 
@@ -193,7 +186,7 @@ const LoginPage: React.FC = () => {
                                 }
                                 window.removeEventListener('message', messageHandler);
                                 popup?.close();
-                                navigate('/');
+                                navigate('/dashboard');
                             } else {
                                 alert('Đăng nhập Facebook thất bại: ' + text);
                             }
