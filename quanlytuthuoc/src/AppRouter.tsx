@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -12,6 +13,7 @@ import Layout from './components/Layout';
 import ProfilePage from './pages/ProfilePage';
 import DrugsPage from './pages/DrugsPage';
 import PatientsPage from './pages/PatientsPage';
+import UserDashboard from './pages/UserDashboard';
 
 const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isLoggedIn } = useAuth();
@@ -33,55 +35,81 @@ const AppRouter: React.FC = () => {
           <Route path="/oauth/facebook-callback" element={<FacebookCallback />} />
           <Route path="/register" element={<RegisterPage />} />
           
-          {/* Protected Routes */}
+          {/* User Routes */}
+          <Route
+            path="/user-dashboard"
+            element={
+              <ProtectedRoute>
+                <UserDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user-profile"
+            element={
+              <ProtectedRoute>
+                <UserDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user-drugs"
+            element={
+              <ProtectedRoute>
+                <UserDashboard />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Admin Routes - Chỉ admin truy cập được */}
           <Route
             path="/dashboard"
             element={
-              <RequireAuth>
+              <ProtectedRoute requireAdmin={true}>
                 <Layout>
                   <Dashboard />
                 </Layout>
-              </RequireAuth>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/profile"
             element={
-              <RequireAuth>
+              <ProtectedRoute requireAdmin={true}>
                 <Layout>
                   <ProfilePage />
                 </Layout>
-              </RequireAuth>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/statistical"
             element={
-              <RequireAuth>
+              <ProtectedRoute requireAdmin={true}>
                 <Layout>
                   <StatisticalPage />
                 </Layout>
-              </RequireAuth>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/drugs"
             element={
-              <RequireAuth>
+              <ProtectedRoute requireAdmin={true}>
                 <Layout>
                   <DrugsPage />
                 </Layout>
-              </RequireAuth>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/patients"
             element={
-              <RequireAuth>
+              <ProtectedRoute requireAdmin={true}>
                 <Layout>
                   <PatientsPage />
                 </Layout>
-              </RequireAuth>
+              </ProtectedRoute>
             }
           />
           

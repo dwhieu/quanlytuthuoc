@@ -29,4 +29,7 @@ public class User {
     
     // Authentication provider: 'local' for username/password, 'google', 'facebook', etc.
     private String authProvider;
+    
+    // User role: 'admin' or 'user'
+    private String role = "user";
 }

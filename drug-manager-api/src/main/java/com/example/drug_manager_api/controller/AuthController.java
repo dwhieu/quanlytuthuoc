@@ -76,6 +76,8 @@ public class AuthController {
             java.util.Map<String, String> resp = new java.util.HashMap<>();
             resp.put("token", token);
             resp.put("username", u.getUsername());
+            resp.put("fullName", u.getFullName() != null ? u.getFullName() : "");
+            resp.put("role", u.getRole() != null ? u.getRole() : "user");
             if (u.getAvatarUrl() != null) resp.put("avatar", u.getAvatarUrl());
             return ResponseEntity.ok(mapper.writeValueAsString(resp));
         } catch (Exception ex) {
@@ -141,6 +143,8 @@ public class AuthController {
             java.util.Map<String, String> resp = new java.util.HashMap<>();
             resp.put("token", token);
             resp.put("username", u.getUsername());
+            resp.put("fullName", u.getFullName() != null ? u.getFullName() : "");
+            resp.put("role", u.getRole() != null ? u.getRole() : "user");
             if (u.getAvatarUrl() != null) resp.put("avatar", u.getAvatarUrl());
             return ResponseEntity.ok(mapper.writeValueAsString(resp));
         } catch (Exception ex) {

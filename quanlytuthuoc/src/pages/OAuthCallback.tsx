@@ -44,14 +44,21 @@ const OAuthCallback: React.FC = () => {
         if (data.token) {
           try { localStorage.setItem('token', data.token); } catch {}
           try { localStorage.setItem('isLoggedIn', 'true'); } catch {}
+          const userRole = data.role || 'user';
+          try { localStorage.setItem('role', userRole); } catch {}
           if (data.avatar) try {
             const key = data.username ? `avatar:${data.username}` : 'avatar';
             localStorage.setItem(key, data.avatar);
             window.dispatchEvent(new Event('avatarChanged'));
           } catch {}
-          if (loginWithToken) loginWithToken(data.token, data.username); else if (data.username) login(data.username);
+          if (loginWithToken) loginWithToken(data.token, data.username, data.fullName, userRole); else if (data.username) login(data.username, data.fullName, userRole);
+          // Điều hướng dựa trên role
+          if (userRole === 'admin' || userRole === 'ADMIN') {
+            navigate('/dashboard');
+          } else {
+            navigate('/user-dashboard');
+          }
         }
-        navigate('/');
       } catch (err: any) {
         console.error('OAuth callback error:', err);
         const msg = err && err.message ? err.message : String(err);

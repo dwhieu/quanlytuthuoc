@@ -4,10 +4,12 @@ interface AuthContextType {
   isLoggedIn: boolean;
   username?: string | null;
   fullName?: string | null;
-  login: (username?: string, fullName?: string) => void;
-  loginWithToken?: (tok: string, user?: string, fullName?: string) => void;
+  role?: string | null;
+  login: (username?: string, fullName?: string, role?: string) => void;
+  loginWithToken?: (tok: string, user?: string, fullName?: string, role?: string) => void;
   token?: string | null;
   logout: () => void;
+  isAdmin?: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -45,6 +47,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return null;
     }
   });
+  const [role, setRole] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem('role');
+    } catch {
+      return null;
+    }
+  });
 
   const fetchUserInfo = async (username: string) => {
     try {
@@ -61,7 +70,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const login = async (user?: string, name?: string) => {
+  const login = async (user?: string, name?: string, userRole?: string) => {
     try {
       localStorage.setItem('isLoggedIn', 'true');
       if (user) {
@@ -74,23 +83,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.setItem('fullName', name);
         setFullName(name);
       }
+      if (userRole) {
+        localStorage.setItem('role', userRole);
+        setRole(userRole);
+      }
     } catch (error) {
       console.error('Error during login:', error);
     }
     setIsLoggedIn(true);
   };
 
-  const loginWithToken = (tok: string, user?: string, name?: string) => {
+  const loginWithToken = (tok: string, user?: string, name?: string, userRole?: string) => {
     try {
       localStorage.setItem('token', tok);
       localStorage.setItem('isLoggedIn', 'true');
       if (user) localStorage.setItem('username', user);
       if (name) localStorage.setItem('fullName', name);
+      if (userRole) localStorage.setItem('role', userRole);
     } catch {}
     setToken(tok);
     setIsLoggedIn(true);
     if (user) setUsername(user);
     if (name) setFullName(name);
+    if (userRole) setRole(userRole);
   };
 
   const logout = () => {
@@ -98,16 +113,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.removeItem('isLoggedIn');
       localStorage.removeItem('username');
       localStorage.removeItem('fullName');
+      localStorage.removeItem('role');
       // Giữ lại avatar trong localStorage để lần đăng nhập sau vẫn còn.
       // Không xóa khóa ảnh đại diện.
     } catch {}
     setIsLoggedIn(false);
     setUsername(null);
     setFullName(null);
+    setRole(null);
+  };
+
+  const isAdmin = () => {
+    return role === 'admin' || role === 'ADMIN';
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, username, fullName, login, loginWithToken, token, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, username, fullName, role, login, loginWithToken, token, logout, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );

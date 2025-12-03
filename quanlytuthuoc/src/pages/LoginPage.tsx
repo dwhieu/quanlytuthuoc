@@ -52,14 +52,21 @@ const LoginPage: React.FC = () => {
                 if (data.username) {
                     // Luu avatar neu backend tra ve
                     if (data.avatar) { try { localStorage.setItem(`avatar:${data.username}`, data.avatar); } catch {} window.dispatchEvent(new Event('avatarChanged')); }
-                    await login(data.username, data.fullName);
+                    // Lấy role từ backend (nếu không có thì mặc định là 'user')
+                    const userRole = data.role || 'user';
+                    await login(data.username, data.fullName, userRole);
                     alert('Đăng nhập thành công!');
-                    navigate('/dashboard');
+                    // Điều hướng dựa trên role
+                    if (userRole === 'admin' || userRole === 'ADMIN') {
+                        navigate('/dashboard');
+                    } else {
+                        navigate('/user-dashboard');
+                    }
                 } else {
                     // Fallback for old response format
-                    await login(username);
+                    await login(username, undefined, 'user');
                     alert(data || 'Đăng nhập thành công!');
-                    navigate('/dashboard');
+                    navigate('/user-dashboard');
                 }
             } else {
                 // Xử lý lỗi từ API
