@@ -143,7 +143,8 @@
 .patients-modal .form-group { margin-bottom: 12px; }
 .patients-modal label { display: block; margin-bottom: 6px; font-weight: 500; }
 .patients-modal input,
-.patients-modal textarea {
+.patients-modal textarea,
+.patients-modal select {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #ced4da;
@@ -151,6 +152,15 @@
   font-size: 14px;
 }
 .patients-modal textarea { resize: vertical; }
+.patients-modal select {
+  background-color: white;
+  cursor: pointer;
+}
+.patients-modal select:focus {
+  outline: none;
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
 
 .patients-modal .modal-footer {
   border-top: 1px solid #e9ecef;
@@ -170,6 +180,113 @@
 .patients-modal .btn-submit { background: #0d6efd; color: #fff; }
 .patients-modal .btn-submit:hover { background: #0a58ca; }
 
+/* Prescription selector styling */
+.prescription-selector {
+  width: 100%;
+}
+
+.prescription-input-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.drug-select,
+.health-status-select {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: white;
+}
+
+.health-status-select {
+  width: 100% !important;
+  cursor: pointer;
+}
+
+.quantity-input {
+  width: 80px !important;
+  padding: 10px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.btn-add-drug {
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.btn-add-drug:hover {
+  background-color: #218838;
+}
+
+.selected-drugs-list {
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 10px;
+  min-height: 80px;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: #f8f9fa;
+}
+
+.selected-drug-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+}
+
+.selected-drug-item:last-child {
+  margin-bottom: 0;
+}
+
+.drug-info {
+  font-size: 14px;
+  color: #212529;
+}
+
+.btn-remove-drug {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+}
+
+.btn-remove-drug:hover {
+  background-color: #bb2d3b;
+}
+
 @media (max-width: 576px) {
   .patients-modal .form-grid { grid-template-columns: 1fr; }
+  
+  .prescription-input-group {
+    flex-direction: column;
+  }
+  
+  .quantity-input {
+    width: 100% !important;
+  }
 }

@@ -109,6 +109,16 @@ const DrugsPage: React.FC = () => {
             ngayNhap: "2024-08-10",
             nhaCungCap: "Công ty Dược Phương Đông",
             tinhTrang: "SL còn ít"
+        },
+        {
+            id: 11,
+            tenThuoc: "Salbutamol 100mcg",
+            loaiThuoc: "Thuốc hen suyễn",
+            soLuong: 90,
+            hsd: "2025-10-10",
+            ngayNhap: "2024-03-05",
+            nhaCungCap: "Công ty Dược phẩm Hà Nội",
+            tinhTrang: "Còn hàng"
         }
     ];
 
@@ -121,7 +131,7 @@ const DrugsPage: React.FC = () => {
 
             {/*Button*/}
             <div className="action-buttons">
-                <Button variant="primary" className="me-2">Thêm Thuốc Mới</Button>
+                <Button variant="primary" className="me-2">THÊM MỚI THUỐC</Button>
                 <Button variant="secondary">Bộ lọc</Button>
             </div>
 

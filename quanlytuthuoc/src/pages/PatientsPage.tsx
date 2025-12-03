@@ -7,6 +7,19 @@ import '../styles/PatientsPage.css';
 const FaEditIcon = FaEdit as unknown as React.ComponentType<any>;
 const FaTrashIcon = FaTrash as unknown as React.ComponentType<any>;
 
+// Danh sách thuốc có sẵn (tất cả trừ hết hàng)
+const availableDrugs = [
+    { id: 1, tenThuoc: "Paracetamol 500mg", soLuong: 150, tinhTrang: "Còn hàng" },
+    { id: 2, tenThuoc: "Amoxicillin 500mg", soLuong: 8, tinhTrang: "SL còn ít" },
+    { id: 4, tenThuoc: "Ibuprofen 400mg", soLuong: 45, tinhTrang: "Sắp hết HSD" },
+    { id: 5, tenThuoc: "Omeprazole 20mg", soLuong: 120, tinhTrang: "Còn hàng" },
+    { id: 6, tenThuoc: "Cetirizine 10mg", soLuong: 5, tinhTrang: "SL còn ít" },
+    { id: 7, tenThuoc: "Metformin 850mg", soLuong: 200, tinhTrang: "Còn hàng" },
+    { id: 8, tenThuoc: "Aspirin 100mg", soLuong: 80, tinhTrang: "Sắp hết HSD" },
+    { id: 10, tenThuoc: "Atorvastatin 20mg", soLuong: 6, tinhTrang: "SL còn ít" },
+    { id: 11, tenThuoc: "Salbutamol 100mcg", soLuong: 90, tinhTrang: "Còn hàng" }
+];
+
 const PatientsPage: React.FC = () => {
     //Data bệnh nhân mẫu
     const samplePatients = [
@@ -110,6 +123,83 @@ declare global { interface Window { __patientsModalsInitialized?: boolean; } }
     const ADD_ID = 'patients-add-modal-overlay';
     const EDIT_ID = 'patients-edit-modal-overlay';
 
+    // Xử lý logic chọn thuốc kê đơn
+    const setupPrescriptionHandler = (overlay: HTMLDivElement) => {
+        const selectedDrugsMap = new Map<string, { name: string; quantity: number; max: number }>();
+        
+        const updateSelectedDrugsList = () => {
+            const listContainer = overlay.querySelector('.selected-drugs-list') as HTMLElement;
+            const hiddenInput = overlay.querySelector('input[name="keDon"]') as HTMLInputElement;
+            
+            if (selectedDrugsMap.size === 0) {
+                listContainer.innerHTML = '<p style="color: #999; font-style: italic; margin-top: 10px;">Chưa có thuốc nào được chọn</p>';
+                hiddenInput.value = '';
+            } else {
+                const drugsList = Array.from(selectedDrugsMap.entries())
+                    .map(([id, drug]) => `
+                        <div class="selected-drug-item" data-drug-id="${id}">
+                            <span class="drug-info">${drug.name} - SL: ${drug.quantity}</span>
+                            <button type="button" class="btn-remove-drug" data-drug-id="${id}">×</button>
+                        </div>
+                    `).join('');
+                listContainer.innerHTML = drugsList;
+                
+                // Cập nhật hidden input
+                const drugsText = Array.from(selectedDrugsMap.values())
+                    .map(drug => `${drug.name} (${drug.quantity})`)
+                    .join(', ');
+                hiddenInput.value = drugsText;
+            }
+        };
+        
+        // Xử lý thêm thuốc
+        overlay.querySelector('.btn-add-drug')?.addEventListener('click', () => {
+            const selectEl = overlay.querySelector('.drug-select') as HTMLSelectElement;
+            const quantityEl = overlay.querySelector('.quantity-input') as HTMLInputElement;
+            
+            const selectedOption = selectEl.options[selectEl.selectedIndex];
+            const drugId = selectedOption.value;
+            const drugName = selectedOption.getAttribute('data-name') || '';
+            const maxQuantity = parseInt(selectedOption.getAttribute('data-max') || '0');
+            const quantity = parseInt(quantityEl.value);
+            
+            if (!drugId) {
+                alert('Vui lòng chọn thuốc');
+                return;
+            }
+            if (!quantity || quantity <= 0) {
+                alert('Vui lòng nhập số lượng hợp lệ');
+                return;
+            }
+            if (quantity > maxQuantity) {
+                alert('Số lượng vượt quá tồn kho (Còn: ' + maxQuantity + ')');
+                return;
+            }
+            
+            selectedDrugsMap.set(drugId, { name: drugName, quantity, max: maxQuantity });
+            updateSelectedDrugsList();
+            
+            // Reset form
+            selectEl.selectedIndex = 0;
+            quantityEl.value = '';
+        });
+        
+        // Xử lý xóa thuốc khỏi danh sách
+        overlay.querySelector('.selected-drugs-list')?.addEventListener('click', (e) => {
+            const target = e.target as HTMLElement;
+            if (target.classList.contains('btn-remove-drug')) {
+                const drugId = target.getAttribute('data-drug-id');
+                if (drugId) {
+                    selectedDrugsMap.delete(drugId);
+                    updateSelectedDrugsList();
+                }
+            }
+        });
+        
+        // Khởi tạo danh sách rỗng
+        updateSelectedDrugsList();
+    };
+
     const ensureModal = (type: 'add' | 'edit') => {
         const overlayId = type === 'add' ? ADD_ID : EDIT_ID;
         let overlay = document.getElementById(overlayId);
@@ -146,11 +236,30 @@ declare global { interface Window { __patientsModalsInitialized?: boolean; } }
               </div>
               <div class="form-group">
                 <label>Tình trạng sức khỏe</label>
-                <textarea name="tinhTrangSucKhoe" rows="3" placeholder="Mô tả tình trạng sức khỏe"></textarea>
+                <select name="tinhTrangSucKhoe" class="health-status-select">
+                  <option value="">-- Chọn tình trạng --</option>
+                  <option value="Ổn định">Ổn định</option>
+                  <option value="Cần theo dõi">Cần theo dõi</option>
+                </select>
               </div>
               <div class="form-group">
                 <label>Kê đơn</label>
-                <textarea name="keDon" rows="3" placeholder="Nhập các thuốc kê đơn"></textarea>
+                <div class="prescription-selector">
+                  <div class="prescription-input-group">
+                    <select class="drug-select" name="selectedDrug">
+                      <option value="">-- Chọn thuốc --</option>
+                      ${availableDrugs.map(drug => 
+                        `<option value="${drug.id}" data-name="${drug.tenThuoc}" data-max="${drug.soLuong}" data-status="${drug.tinhTrang}">
+                          ${drug.tenThuoc} - Còn: ${drug.soLuong} (${drug.tinhTrang})
+                        </option>`
+                      ).join('')}
+                    </select>
+                    <input type="number" class="quantity-input" placeholder="SL" min="1" />
+                    <button type="button" class="btn-add-drug">Thêm</button>
+                  </div>
+                  <div class="selected-drugs-list"></div>
+                  <input type="hidden" name="keDon" />
+                </div>
               </div>
             </div>
             <div class="modal-footer">
@@ -173,6 +282,9 @@ declare global { interface Window { __patientsModalsInitialized?: boolean; } }
             overlay!.classList.remove('show');
         });
 
+        // Xử lý thêm thuốc vào kê đơn
+        setupPrescriptionHandler(overlay as HTMLDivElement);
+
         return overlay as HTMLDivElement;
     };
 
@@ -180,6 +292,13 @@ declare global { interface Window { __patientsModalsInitialized?: boolean; } }
         const overlay = ensureModal('add');
         // Reset các fields
         overlay.querySelectorAll('input, textarea').forEach((el) => ((el as HTMLInputElement).value = ''));
+        // Reset all select elements
+        overlay.querySelectorAll('select').forEach((el) => ((el as HTMLSelectElement).selectedIndex = 0));
+        // Reset selected drugs list
+        const listContainer = overlay.querySelector('.selected-drugs-list') as HTMLElement;
+        if (listContainer) {
+            listContainer.innerHTML = '<p style="color: #999; font-style: italic; margin-top: 10px;">Chưa có thuốc nào được chọn</p>';
+        }
         overlay.classList.add('show');
     };
 
@@ -189,8 +308,21 @@ declare global { interface Window { __patientsModalsInitialized?: boolean; } }
         (overlay.querySelector('input[name="tuoi"]') as HTMLInputElement).value = data.tuoi || '';
         (overlay.querySelector('input[name="sdt"]') as HTMLInputElement).value = data.sdt || '';
         (overlay.querySelector('input[name="diaChi"]') as HTMLInputElement).value = data.diaChi || '';
-        (overlay.querySelector('textarea[name="tinhTrangSucKhoe"]') as HTMLTextAreaElement).value = data.tinhTrangSucKhoe || '';
-        (overlay.querySelector('textarea[name="keDon"]') as HTMLTextAreaElement).value = '';
+        
+        // Set tình trạng sức khỏe (select element)
+        const healthSelect = overlay.querySelector('select[name="tinhTrangSucKhoe"]') as HTMLSelectElement;
+        if (healthSelect) {
+            healthSelect.value = data.tinhTrangSucKhoe || '';
+        }
+        
+        // Reset drug selector
+        const selectEl = overlay.querySelector('.drug-select') as HTMLSelectElement;
+        if (selectEl) selectEl.selectedIndex = 0;
+        // Reset selected drugs list
+        const listContainer = overlay.querySelector('.selected-drugs-list') as HTMLElement;
+        if (listContainer) {
+            listContainer.innerHTML = '<p style="color: #999; font-style: italic; margin-top: 10px;">Chưa có thuốc nào được chọn</p>';
+        }
         overlay.classList.add('show');
     };
 
