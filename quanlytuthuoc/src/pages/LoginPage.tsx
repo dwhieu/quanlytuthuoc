@@ -19,13 +19,19 @@ const LoginPage: React.FC = () => {
     const navigate = useNavigate();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+    };
 
     // *** ĐÃ THÊM TỪ KHÓA ASYNC ***
     const handleSubmit = async (e: React.FormEvent) => { 
         e.preventDefault();
         
         if (!username || !password) {
-            alert('Vui lòng nhập đầy đủ thông tin!');
+            showToast('Vui lòng nhập đầy đủ thông tin!', 'error');
             return;
         }
 
@@ -55,26 +61,28 @@ const LoginPage: React.FC = () => {
                     // Lấy role từ backend (nếu không có thì mặc định là 'user')
                     const userRole = data.role || 'user';
                     await login(data.username, data.fullName, userRole);
-                    alert('Đăng nhập thành công!');
+                    showToast('Đăng nhập thành công!', 'success');
                     // Điều hướng dựa trên role
-                    if (userRole === 'admin' || userRole === 'ADMIN') {
-                        navigate('/dashboard');
-                    } else {
-                        navigate('/user-dashboard');
-                    }
+                    setTimeout(() => {
+                        if (userRole === 'admin' || userRole === 'ADMIN') {
+                            navigate('/dashboard');
+                        } else {
+                            navigate('/user-dashboard');
+                        }
+                    }, 1500);
                 } else {
                     // Fallback for old response format
                     await login(username, undefined, 'user');
-                    alert(data || 'Đăng nhập thành công!');
-                    navigate('/user-dashboard');
+                    showToast(data || 'Đăng nhập thành công!', 'success');
+                    setTimeout(() => navigate('/user-dashboard'), 1500);
                 }
             } else {
                 // Xử lý lỗi từ API
-                alert(`Đăng nhập thất bại: ${typeof data === 'string' ? data : 'Lỗi không xác định'}`);
+                showToast(`Đăng nhập thất bại: ${typeof data === 'string' ? data : 'Lỗi không xác định'}`, 'error');
             }
         } catch (error) {
             console.error('Lỗi kết nối API:', error);
-            alert('Lỗi kết nối! Vui lòng kiểm tra máy chủ Java đang chạy trên Port 8000.');
+            showToast('Lỗi kết nối! Vui lòng kiểm tra máy chủ Java đang chạy trên Port 8000.', 'error');
         }
     };
 
@@ -123,7 +131,7 @@ const LoginPage: React.FC = () => {
                                         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken: e.data.idToken })
                                     });
                                     const text = await resp.text();
-                                    if (!resp.ok) { alert('Đăng nhập Google thất bại: ' + text); return; }
+                                    if (!resp.ok) { showToast('Đăng nhập Google thất bại: ' + text, 'error'); return; }
                                     let data;
                                     try { data = JSON.parse(text); } catch { data = {}; }
                                     if (data.token) try { localStorage.setItem('token', data.token); } catch {}
@@ -133,7 +141,7 @@ const LoginPage: React.FC = () => {
                                     window.removeEventListener('message', messageHandler);
                                     try { popup?.close(); } catch {}
                                     navigate('/dashboard');
-                                } catch (err) { alert('Lỗi kết nối Google OAuth: ' + err); }
+                                } catch (err) { showToast('Lỗi kết nối Google OAuth: ' + err, 'error'); }
                             })();
                             return;
                         }
@@ -195,10 +203,10 @@ const LoginPage: React.FC = () => {
                                 popup?.close();
                                 navigate('/dashboard');
                             } else {
-                                alert('Đăng nhập Facebook thất bại: ' + text);
+                                showToast('Đăng nhập Facebook thất bại: ' + text, 'error');
                             }
                         } catch (err) {
-                            alert('Lỗi kết nối Facebook: ' + err);
+                            showToast('Lỗi kết nối Facebook: ' + err, 'error');
                         }
                     }
                 };
@@ -208,7 +216,13 @@ const LoginPage: React.FC = () => {
 
     return (
         // Thẻ bao ngoài cùng, tạo hiệu ứng nền '+' lớn
-        <div className="login-background"> 
+        <div className="login-background">
+            {/* Toast Notification */}
+            {toast && (
+                <div className={`login-toast ${toast.type}`}>
+                    {toast.message}
+                </div>
+            )} 
             {/* Box chứa form đăng nhập */}
             <div className="login-card"> 
                 {/* Logo y tế (Sử dụng thẻ <img> hoặc SVG) */}
@@ -273,7 +287,7 @@ const LoginPage: React.FC = () => {
 
                 {/* Đăng ký */}
                 <div className="register-link">
-                    Chưa có tài khoản? <a href="/register">**Đăng kí tại đây**</a>
+                    Chưa có tài khoản? <a href="/register">Đăng kí tại đây</a>
                 </div>
             </div>
         </div>

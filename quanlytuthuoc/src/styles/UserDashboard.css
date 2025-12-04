@@ -1,5 +1,19 @@
 /* UserDashboard Styles */
 
+/* Content Wrapper */
+.user-content-wrapper {
+  padding: 2rem;
+  overflow-y: auto;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  height: calc(100vh - 60px);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.user-content-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
 .user-content {
   animation: fadeIn 0.3s ease-in;
 }
@@ -15,25 +29,395 @@
   }
 }
 
+/* Welcome Banner */
+.welcome-banner {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 2.5rem;
+  border-radius: 1rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+}
+
+.banner-content h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.banner-content p {
+  font-size: 1rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.stat-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.3rem;
+}
+
+.gradient-blue .stat-icon {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.gradient-green .stat-icon {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.gradient-purple .stat-icon {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.gradient-orange .stat-icon {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #212529;
+  margin: 0;
+}
+
+/* Quick Actions */
+.quick-actions-section {
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 1rem;
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.action-btn {
+  background: white;
+  border: 2px solid #e9ecef;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  color: #212529;
+}
+
+.action-btn:hover {
+  border-color: #0d6efd;
+  background: #f0f6ff;
+  transform: translateY(-2px);
+}
+
+.action-icon {
+  font-size: 1.75rem;
+}
+
+.action-text {
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.action-btn-primary:hover {
+  background: #e7f1ff;
+  border-color: #0d6efd;
+}
+
+.action-btn-secondary:hover {
+  background: #fff5f7;
+  border-color: #f5576c;
+}
+
+.action-btn-tertiary:hover {
+  background: #f5f0ff;
+  border-color: #764ba2;
+}
+
+/* Info Cards Section */
+.info-cards-section {
+  margin-bottom: 2rem;
+}
+
+.info-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 0.875rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid #0d6efd;
+  transition: all 0.3s ease;
+}
+
+.info-card:hover {
+  border-left-color: #764ba2;
+}
+
+.card-icon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 0.5rem;
+}
+
+.card-text {
+  color: #495057;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+/* Profile Page Styles */
+.profile-top {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.avatar-column {
+  width: 260px;
+  flex: 0 0 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.avatar-box {
+  width: 220px;
+  height: 220px;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #eee;
+  background: #fff;
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 220ms ease;
+}
+
+.avatar-box:hover {
+  transform: scale(1.03) rotate(-0.5deg);
+  box-shadow: 0 8px 20px rgba(24, 24, 40, 0.08);
+}
+
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 280ms ease;
+}
+
+.avatar-box:hover .profile-avatar {
+  transform: scale(1.02);
+}
+
+.avatar-buttons {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.avatar-buttons .btn {
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.avatar-buttons .btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+}
+
+.info-column {
+  flex: 1;
+}
+
+.info-column h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 1rem;
+}
+
+/* Avatar Modal */
+.avatar-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4000;
+}
+
+.avatar-modal {
+  width: 760px;
+  max-width: 95%;
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.avatar-modal .close-btn {
+  position: absolute;
+  right: 12px;
+  top: 8px;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.avatar-modal h5 {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.avatar-modal p.muted {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+
+.avatar-conditions {
+  max-height: 160px;
+  overflow: auto;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+.avatar-conditions ol {
+  margin-bottom: 0;
+  padding-left: 20px;
+}
+
+.avatar-conditions li {
+  margin-bottom: 6px;
+}
+
+.avatar-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.upload-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+}
+
+.avatar-preview-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  width: 100%;
+  max-width: 420px;
+  border: 1px dashed #ddd;
+  border-radius: 8px;
+  padding: 18px;
+  background: #f8f9fa;
+}
+
+.avatar-dropzone {
+  color: #888;
+}
+
+.avatar-preview {
+  max-width: 220px;
+  max-height: 220px;
+  border-radius: 6px;
+}
+
+.preview-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+}
+
+/* Bootstrap Card Overrides */
 .card {
   border: none;
   border-radius: 8px;
   transition: all 0.3s ease;
+  animation: cardFadeIn 360ms ease both;
 }
 
 .card:hover {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
-}
-
-.card-title {
-  color: #333;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-
-.card-text {
-  font-size: 14px;
-  line-height: 1.6;
 }
 
 .btn-primary {
@@ -47,22 +431,265 @@
   box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
 }
 
-.btn-outline-danger {
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Drug Management Page Styles */
+.drugs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.drugs-header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.drugs-header h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #212529;
+  margin: 0;
+}
+
+.drugs-table-wrapper {
+  background: white;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
 }
 
-.btn-outline-danger:hover {
-  transform: translateY(-2px);
+.drugs-table-wrapper:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
-/* Responsive adjustments */
+.drugs-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.drugs-table thead {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-bottom: 2px solid #e9ecef;
+}
+
+.drugs-table thead th {
+  padding: 1.25rem;
+  text-align: left;
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.drugs-table tbody tr {
+  border-bottom: 1px solid #e9ecef;
+  transition: all 0.2s ease;
+}
+
+.drugs-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.drugs-table tbody td {
+  padding: 1.25rem;
+  color: #212529;
+  font-size: 0.95rem;
+}
+
+.col-stt {
+  width: 10%;
+}
+
+.col-name {
+  width: 30%;
+}
+
+.col-type {
+  width: 25%;
+}
+
+.col-quantity {
+  width: 18%;
+}
+
+.col-expiry {
+  width: 17%;
+}
+
+.table-row-empty {
+  background: white !important;
+}
+
+.table-row-empty td {
+  border-bottom: none;
+  padding: 3rem 1.25rem;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  opacity: 0.7;
+}
+
+.empty-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #212529;
+  margin: 0;
+}
+
+.empty-subtext {
+  font-size: 0.95rem;
+  color: #6c757d;
+  margin: 0;
+}
+
+.drugs-sample-info {
+  text-align: center;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 0.75rem;
+  border-left: 3px solid #667eea;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-  .card-body {
+  .user-content-wrapper {
     padding: 1rem;
   }
 
-  .btn-sm {
-    font-size: 12px;
-    padding: 0.4rem 0.8rem;
+  .welcome-banner {
+    padding: 1.5rem;
+  }
+
+  .banner-content h2 {
+    font-size: 1.5rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .action-btn {
+    padding: 1rem;
+  }
+
+  .profile-top {
+    flex-direction: column;
+  }
+
+  .avatar-column {
+    width: 100%;
+    flex: none;
+  }
+
+  .avatar-box {
+    width: 180px;
+    height: 180px;
+  }
+
+  .avatar-modal {
+    width: 90% !important;
+  }
+
+  .drugs-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .drugs-table-wrapper {
+    border-radius: 0.75rem;
+  }
+
+  .drugs-table thead th {
+    padding: 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .drugs-table tbody td {
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .col-name,
+  .col-type {
+    width: 18%;
+  }
+
+  .col-actions {
+    width: 18%;
+  }
+}
+
+@media (max-width: 576px) {
+  .welcome-banner {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .banner-content h2 {
+    font-size: 1.25rem;
+  }
+
+  .stat-card {
+    padding: 1rem;
+  }
+
+  .stat-value {
+    font-size: 1.25rem;
+  }
+
+  .section-title {
+    font-size: 1rem;
+  }
+
+  .info-column h3 {
+    font-size: 1.25rem;
+  }
+
+  .col-type {
+    display: none;
+  }
+
+  .drugs-table thead th:nth-child(3),
+  .drugs-table tbody td:nth-child(3) {
+    display: none;
+  }
+
+  .col-name {
+    width: 30%;
+  }
+
+  .col-quantity {
+    width: 20%;
+  }
+
+  .col-expiry {
+    width: 20%;
   }
 }
