@@ -5,8 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import OAuthCallback from './pages/OAuthCallback';
-import FacebookCallback from './pages/FacebookCallback';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import Dashboard from './components/Dashboard';
 import StatisticalPage from './pages/StatisticalPage';
 import Layout from './components/Layout';
@@ -31,9 +30,8 @@ const AppRouter: React.FC = () => {
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/oauth/callback" element={<OAuthCallback />} />
-          <Route path="/oauth/facebook-callback" element={<FacebookCallback />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           
           {/* User Routes */}
           <Route

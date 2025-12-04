@@ -5,6 +5,9 @@ import com.example.drug_manager_api.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 @Service
 public class AuthService {
@@ -12,10 +15,31 @@ public class AuthService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     private final PasswordEncoder passwordEncoder;
+    
+    // In-memory storage for OTP (email -> OTP info)
+    private final Map<String, OtpInfo> otpStore = new HashMap<>();
 
     public AuthService(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
+    }
+
+    // Helper class to store OTP and expiration
+    private static class OtpInfo {
+        String otp;
+        long expiryTime;
+        
+        OtpInfo(String otp, long expiryTime) {
+            this.otp = otp;
+            this.expiryTime = expiryTime;
+        }
+        
+        boolean isExpired() {
+            return System.currentTimeMillis() > expiryTime;
+        }
     }
 
     public String register(User user) {
@@ -68,46 +92,6 @@ public class AuthService {
     }
 
     /**
-     * Create or return an existing user based on OAuth provider info. Password is left null.
-     * @param username suggested username (e.g., email)
-     * @param fullName display name
-     * @param email email address
-     * @return existing or newly-created User
-     */
-    public User createOrGetUserFromOAuth(String username, String fullName, String email, String avatarUrl, String provider) {
-        User user = userRepository.findByUsername(username).orElse(null);
-        if (user != null) {
-            // if OAuth provides an avatar and we don't have one (or it's different), update it
-            boolean needSave = false;
-            if (avatarUrl != null && (user.getAvatarUrl() == null || !avatarUrl.equals(user.getAvatarUrl()))) {
-                user.setAvatarUrl(avatarUrl);
-                needSave = true;
-            }
-            // ensure authProvider is set for existing oauth-created users
-            if (user.getAuthProvider() == null) {
-                user.setAuthProvider(provider != null ? provider : "google");
-                needSave = true;
-            }
-            if (needSave) {
-                userRepository.save(user);
-            }
-            user.setPassword(null);
-            return user;
-        }
-
-        User u = new User();
-        u.setUsername(username);
-        u.setEmail(email);
-        u.setFullName(fullName != null ? fullName : username);
-        u.setPassword(null);
-        u.setAvatarUrl(avatarUrl);
-        u.setAuthProvider(provider != null ? provider : "google");
-        userRepository.save(u);
-        u.setPassword(null);
-        return u;
-    }
-
-    /**
      * Change the password for an existing user.
      * @param username the username
      * @param currentPassword the user's current plain password
@@ -117,15 +101,95 @@ public class AuthService {
     public boolean changePassword(String username, String currentPassword, String newPassword) {
         User user = userRepository.findByUsername(username).orElse(null);
         if (user == null) return false;
-        // Do not allow password changes for OAuth users
-        if (user.getAuthProvider() != null && !"local".equalsIgnoreCase(user.getAuthProvider())) {
-            return false;
-        }
         // verify current password
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) return false;
         // encode and set new password
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         return true;
+    }
+
+    /**
+     * Request password reset by generating and storing OTP
+     * @param email the user's email
+     * @return message indicating result
+     */
+    public String requestPasswordReset(String email) {
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user == null) {
+            return "Email không tồn tại trong hệ thống";
+        }
+        
+        // Generate 6-digit OTP
+        String otp = String.format("%06d", new Random().nextInt(999999));
+        long expiryTime = System.currentTimeMillis() + (10 * 60 * 1000); // 10 minutes
+        
+        otpStore.put(email, new OtpInfo(otp, expiryTime));
+        
+        // Send OTP via email
+        try {
+            emailService.sendOtpEmail(email, otp);
+        } catch (Exception e) {
+            // Log error but don't fail the request
+            System.err.println("Email sending failed: " + e.getMessage());
+        }
+        
+        return "OTP đã được gửi";
+    }
+
+    /**
+     * Verify OTP provided by user
+     * @param email the user's email
+     * @param otp the OTP provided by user
+     * @return true if OTP is valid and not expired
+     */
+    public boolean verifyOtp(String email, String otp) {
+        OtpInfo otpInfo = otpStore.get(email);
+        if (otpInfo == null) {
+            return false;
+        }
+        
+        if (otpInfo.isExpired()) {
+            otpStore.remove(email);
+            return false;
+        }
+        
+        return otpInfo.otp.equals(otp);
+    }
+
+    /**
+     * Reset password with valid OTP
+     * @param email the user's email
+     * @param otp the OTP to verify
+     * @param newPassword the new password
+     * @return message indicating result
+     */
+    public String resetPassword(String email, String otp, String newPassword) {
+        // Verify OTP first
+        if (!verifyOtp(email, otp)) {
+            return "Mã OTP không hợp lệ hoặc đã hết hạn";
+        }
+        
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user == null) {
+            return "Tài khoản không tồn tại";
+        }
+        
+        // Update password
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        
+        // Send confirmation email
+        try {
+            emailService.sendPasswordResetConfirmation(email, user.getUsername());
+        } catch (Exception e) {
+            // Log error but don't fail the request
+            System.err.println("Confirmation email sending failed: " + e.getMessage());
+        }
+        
+        // Remove used OTP
+        otpStore.remove(email);
+        
+        return "Mật khẩu đã được đặt lại";
     }
 }

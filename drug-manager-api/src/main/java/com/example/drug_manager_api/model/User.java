@@ -27,7 +27,7 @@ public class User {
     // URL to the user's avatar/profile picture (optional)
     private String avatarUrl;
     
-    // Authentication provider: 'local' for username/password, 'google', 'facebook', etc.
+    // Authentication provider: currently 'local' for username/password
     private String authProvider;
     
     // User role: 'admin' or 'user'

@@ -99,15 +99,15 @@
 	cursor:pointer;
 	box-shadow: 0 6px 14px rgba(15,107,97,0.25);
 }
-.gradient-button{ background: linear-gradient(90deg, var(--accent-start), var(--accent-end)) }
 
-.social-text{ color: #9aa0a3; margin-top:14px; margin-bottom:8px }
-.social-login{ display:flex; gap:12px; justify-content:center; margin-bottom:12px }
-.social-icon{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:#fff; box-shadow: 0 4px 12px rgba(0,0,0,0.12); border:none }
-.facebook-icon{ color:#1877f2 }
-.google-icon{ color:#ea4335 }
+.gradient-button{ 
+	background: linear-gradient(90deg, var(--accent-start), var(--accent-end)) 
+}
 
-.register-link{ margin-top:10px; color:#6b998f }
+.register-link{ 
+	margin-top:10px; 
+	color:#6b998f 
+}
 
 /* small responsive */
 @media (max-width:420px){
@@ -149,16 +149,6 @@
 .input-group input:focus {
 	border-color: var(--teal-2);
 	box-shadow: 0 0 0 3px rgba(15, 138, 134, 0.15);
-}
-
-/* --- Icon mạng xã hội glow khi hover --- */
-.social-icon {
-	transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.social-icon:hover {
-	transform: scale(1.1);
-	box-shadow: 0 6px 16px rgba(0,0,0,0.2);
 }
 
 /* --- Nền gradient chuyển động nhẹ --- */
@@ -220,4 +210,22 @@
 		left: 20px;
 		max-width: none;
 	}
+}
+
+.forgot-password-link {
+	margin: 12px 0;
+	text-align: center;
+}
+
+.forgot-password-link a {
+	color: #1e90ff;
+	text-decoration: none;
+	font-size: 14px;
+	font-weight: 500;
+	transition: color 0.3s ease;
+}
+
+.forgot-password-link a:hover {
+	color: #0d5aa8;
+	text-decoration: underline;
 }
