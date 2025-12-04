@@ -13,7 +13,7 @@ const ForgotPasswordPage: React.FC = () => {
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [step, setStep] = useState<'email' | 'otp' | 'newPassword'>('email');
-    const [otp, setOtp] = useState('');
+    const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -66,8 +66,9 @@ const ForgotPasswordPage: React.FC = () => {
     const handleVerifyOtp = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (!otp) {
-            showToast('Vui lòng nhập mã OTP!', 'error');
+        const otpString = otp.join('');
+        if (!otpString || otpString.length !== 6) {
+            showToast('Vui lòng nhập đầy đủ 6 chữ số OTP!', 'error');
             return;
         }
 
@@ -78,7 +79,7 @@ const ForgotPasswordPage: React.FC = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email, otp }),
+                body: JSON.stringify({ email, otp: otpString }),
             });
 
             if (response.ok) {
@@ -93,6 +94,30 @@ const ForgotPasswordPage: React.FC = () => {
             showToast('Lỗi kết nối!', 'error');
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    // Handle OTP input change
+    const handleOtpChange = (index: number, value: string) => {
+        // Chỉ cho phép nhập số
+        if (!/^\d*$/.test(value)) return;
+        
+        const newOtp = [...otp];
+        newOtp[index] = value;
+        setOtp(newOtp);
+        
+        // Tự động chuyển sang ô tiếp theo nếu nhập số
+        if (value && index < 5) {
+            const nextInput = document.getElementById(`otp-input-${index + 1}`) as HTMLInputElement;
+            nextInput?.focus();
+        }
+    };
+
+    // Handle backspace
+    const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Backspace' && !otp[index] && index > 0) {
+            const prevInput = document.getElementById(`otp-input-${index - 1}`) as HTMLInputElement;
+            prevInput?.focus();
         }
     };
 
@@ -195,16 +220,21 @@ const ForgotPasswordPage: React.FC = () => {
                 {step === 'otp' && (
                     <form onSubmit={handleVerifyOtp}>
                         <p className="step-description">Nhập mã OTP đã gửi đến email {email}</p>
-                        <div className="input-group">
-                            <input
-                                type="text"
-                                placeholder="Mã OTP (6 chữ số)"
-                                value={otp}
-                                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                maxLength={6}
-                                disabled={isLoading}
-                                className="otp-input"
-                            />
+                        <div className="otp-container">
+                            {otp.map((digit, index) => (
+                                <input
+                                    key={index}
+                                    id={`otp-input-${index}`}
+                                    type="text"
+                                    maxLength={1}
+                                    value={digit}
+                                    onChange={(e) => handleOtpChange(index, e.target.value)}
+                                    onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                                    disabled={isLoading}
+                                    className="otp-input-box"
+                                    inputMode="numeric"
+                                />
+                            ))}
                         </div>
                         <button 
                             type="submit" 
