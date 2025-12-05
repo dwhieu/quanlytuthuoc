@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 import { Button, Table } from "react-bootstrap";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash, FaSearch, FaAngleRight, FaAngleDown } from "react-icons/fa";
 import '../styles/DrugsPage.css';
 
 // Cast icons to component types to satisfy TypeScript
 const FaEditIcon = FaEdit as unknown as React.ComponentType<any>;
 const FaTrashIcon = FaTrash as unknown as React.ComponentType<any>;
+const FaSearchIcon = FaSearch as unknown as React.ComponentType<any>;
+const FaAngleRightIcon = FaAngleRight as unknown as React.ComponentType<any>;
+const FaAngleDownIcon = FaAngleDown as unknown as React.ComponentType<any>;
 
 const DrugsPage: React.FC = () => {
     //Data thuốc mẫu
@@ -122,6 +125,70 @@ const DrugsPage: React.FC = () => {
         }
     ];
 
+    // State bộ lọc
+    const [showNameSearch, setShowNameSearch] = useState(false);
+    const [nameQuery, setNameQuery] = useState("");
+    const [nameInputValue, setNameInputValue] = useState("");
+    const nameInputRef = useRef<HTMLInputElement | null>(null);
+
+    const [statusArrowExpanded, setStatusArrowExpanded] = useState(false);
+    const statusHeaderRef = useRef<HTMLTableHeaderCellElement | null>(null);
+    const statusOptions = useMemo(() => ["Tất cả", "Còn hàng", "Hết hàng", "Sắp hết HSD", "SL còn ít"], []);
+    const [selectedStatus, setSelectedStatus] = useState<string>("Tất cả");
+
+    useEffect(() => { if (showNameSearch) nameInputRef.current?.focus(); }, [showNameSearch]);
+
+    useEffect(() => {
+        const onDocClick = (e: MouseEvent) => {
+            if (!statusArrowExpanded) return;
+            const target = e.target as HTMLElement;
+            const headerEl = statusHeaderRef.current;
+            if (headerEl && target && !headerEl.contains(target)) {
+                setStatusArrowExpanded(false);
+            }
+        };
+        document.addEventListener('click', onDocClick);
+        return () => document.removeEventListener('click', onDocClick);
+    }, [statusArrowExpanded]);
+
+    const filteredDrugs = useMemo(() => {
+        return sampleDrugs.filter(d => {
+            const nameOk = nameQuery.trim() ? d.tenThuoc.toLowerCase().includes(nameQuery.trim().toLowerCase()) : true;
+            const statusOk = selectedStatus === 'Tất cả' ? true : d.tinhTrang === selectedStatus;
+            return nameOk && statusOk;
+        });
+    }, [sampleDrugs, nameQuery, selectedStatus]);
+
+    // Handlers
+    const toggleNameSearch = () => {
+        setShowNameSearch(prev => !prev);
+        if (showNameSearch) {
+            setNameInputValue("");
+        } else {
+            setNameInputValue(nameQuery);
+        }
+    };
+    const handleNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            setNameQuery(nameInputValue.trim());
+            setShowNameSearch(false);
+            setNameInputValue("");
+        }
+    };
+    const handleNameBlur = () => {
+        setShowNameSearch(false);
+        setNameInputValue("");
+    };
+
+    const toggleStatusArrow = (e?: React.MouseEvent) => {
+        e?.stopPropagation();
+        setStatusArrowExpanded(prev => !prev);
+    };
+    const handleSelectStatus = (opt: string) => {
+        setSelectedStatus(opt);
+        setStatusArrowExpanded(false);
+    };
+
     return (
         <div className="drugs-page">
             {/* Tiêu đề trang */}
@@ -132,7 +199,7 @@ const DrugsPage: React.FC = () => {
             {/*Button*/}
             <div className="action-buttons">
                 <Button variant="primary" className="me-2">THÊM MỚI THUỐC</Button>
-                <Button variant="secondary">Bộ lọc</Button>
+                {/*<Button variant="secondary">Bộ Lọc</Button>*/}
             </div>
 
             {/* Bảng danh sách thuốc */}
@@ -140,18 +207,53 @@ const DrugsPage: React.FC = () => {
                 <thead>
                     <tr>
                         <th>STT</th>
-                        <th>Tên Thuốc</th>
+                        <th className="th-with-popup">
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                                <span>Tên Thuốc</span>
+                                <span className="search-icon" onClick={toggleNameSearch} title="Tìm tên thuốc">
+                                    <FaSearchIcon />
+                                </span>
+                            </div>
+                            {showNameSearch && (
+                                <div className="search-popup" onMouseDown={e => e.preventDefault()}>
+                                    <input
+                                        ref={nameInputRef}
+                                        type="text"
+                                        placeholder="Tìm tên thuốc"
+                                        value={nameInputValue}
+                                        onChange={e => setNameInputValue(e.target.value)}
+                                        onKeyDown={handleNameKeyDown}
+                                        onBlur={handleNameBlur}
+                                        className="search-input"
+                                    />
+                                </div>
+                            )}
+                        </th>
                         <th>Loại Thuốc</th>
                         <th>Số lượng</th>
                         <th>HSD</th>
                         <th>Ngày Nhập thuốc</th>
                         <th>Nhà Cung Cấp</th>
-                        <th>Tình Trạng thuốc</th>
+                        <th className="th-with-popup" ref={statusHeaderRef}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }} onClick={toggleStatusArrow} title="Lọc tình trạng">
+                                <span>Tình Trạng thuốc</span>
+                                <span style={{ cursor: 'pointer', display: 'inline-flex' }}>
+                                    {statusArrowExpanded ? <FaAngleDownIcon /> : <FaAngleRightIcon />}
+                                </span>
+                            </div>
+                            {statusArrowExpanded && (
+                                <ul className="health-filter-popup" onMouseDown={e => e.preventDefault()}>
+                                    {statusOptions.map(opt => (
+                                        <li key={opt} className="health-filter-item" onClick={() => handleSelectStatus(opt)}>{opt}</li>
+                                    ))}
+                                </ul>
+                            )}
+                        </th>
                         <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {sampleDrugs.map((drug, index) => (
+                    {filteredDrugs.map((drug, index) => (
                         <tr key={drug.id}>
                             <td>{index + 1}</td>
                             <td>{drug.tenThuoc}</td>
@@ -180,6 +282,11 @@ const DrugsPage: React.FC = () => {
                             </td>
                         </tr>
                     ))}
+                    {filteredDrugs.length === 0 && (
+                        <tr>
+                            <td colSpan={9} style={{ textAlign: 'center', color: '#888' }}>Không có dữ liệu phù hợp</td>
+                        </tr>
+                    )}
                 </tbody>
             </Table>
         </div>
@@ -187,5 +294,3 @@ const DrugsPage: React.FC = () => {
 };
 
 export default DrugsPage;
-                            
-                           
