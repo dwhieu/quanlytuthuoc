@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Table } from "react-bootstrap";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash, FaSearch, FaAngleRight, FaAngleDown } from "react-icons/fa";
 import '../styles/PatientsPage.css';
 
 // Cast icons to component types to satisfy TypeScript
 const FaEditIcon = FaEdit as unknown as React.ComponentType<any>;
 const FaTrashIcon = FaTrash as unknown as React.ComponentType<any>;
+const FaSearchIcon = FaSearch as unknown as React.ComponentType<any>;
+const FaAngleRightIcon = FaAngleRight as unknown as React.ComponentType<any>;
+const FaAngleDownIcon = FaAngleDown as unknown as React.ComponentType<any>;
 
 // Danh sách thuốc có sẵn (tất cả trừ hết hàng)
 const availableDrugs = [
@@ -52,6 +55,105 @@ const PatientsPage: React.FC = () => {
         }
     ];
 
+    // State bộ lọc
+    const [showNameSearch, setShowNameSearch] = useState(false);
+    const [showPhoneSearch, setShowPhoneSearch] = useState(false);
+    const [nameQuery, setNameQuery] = useState("");
+    const [phoneQuery, setPhoneQuery] = useState("");
+    // Uncommitted input values
+    const [nameInputValue, setNameInputValue] = useState("");
+    const [phoneInputValue, setPhoneInputValue] = useState("");
+
+    const [healthArrowExpanded, setHealthArrowExpanded] = useState(false);
+    const healthOptions = useMemo(() => ["Tất cả", "Ổn định", "Cần theo dõi"], []);
+    const [selectedHealthFilter, setSelectedHealthFilter] = useState<string>("Tất cả");
+
+    const nameInputRef = useRef<HTMLInputElement | null>(null);
+    const phoneInputRef = useRef<HTMLInputElement | null>(null);
+    const healthHeaderRef = useRef<HTMLTableHeaderCellElement | null>(null);
+
+    useEffect(() => {
+        if (showNameSearch) nameInputRef.current?.focus();
+        if (showPhoneSearch) phoneInputRef.current?.focus();
+    }, [showNameSearch, showPhoneSearch]);
+
+    useEffect(() => {
+        const onDocClick = (e: MouseEvent) => {
+            if (!healthArrowExpanded) return;
+            const target = e.target as HTMLElement;
+            const headerEl = healthHeaderRef.current;
+            if (headerEl && target && !headerEl.contains(target)) {
+                setHealthArrowExpanded(false);
+            }
+        };
+        document.addEventListener('click', onDocClick);
+        return () => document.removeEventListener('click', onDocClick);
+    }, [healthArrowExpanded]);
+
+    const filteredPatients = useMemo(() => {
+        return samplePatients.filter(p => {
+            const nameOk = nameQuery.trim()
+                ? p.tenBenhNhan.toLowerCase().includes(nameQuery.trim().toLowerCase())
+                : true;
+            const phoneOk = phoneQuery.trim()
+                ? p.sdt.includes(phoneQuery.trim())
+                : true;
+            const healthOk = selectedHealthFilter === "Tất cả" ? true : p.tinhTrangSucKhoe === selectedHealthFilter;
+            return nameOk && phoneOk && healthOk;
+        });
+    }, [samplePatients, nameQuery, phoneQuery, selectedHealthFilter]);
+
+    // Handlers
+    const handleToggleNameSearch = () => {
+        setShowNameSearch(prev => !prev);
+        if (showNameSearch) {
+            setNameInputValue("");
+        } else {
+            setNameInputValue(nameQuery);
+        }
+    };
+    const handleTogglePhoneSearch = () => {
+        setShowPhoneSearch(prev => !prev);
+        if (showPhoneSearch) {
+            setPhoneInputValue("");
+        } else {
+            setPhoneInputValue(phoneQuery);
+        }
+    };
+    const handleNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            setNameQuery(nameInputValue.trim());
+            // Close popup and clear input after applying filter
+            setShowNameSearch(false);
+            setNameInputValue("");
+        }
+    };
+    const handlePhoneKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            setPhoneQuery(phoneInputValue.trim());
+            setShowPhoneSearch(false);
+            setPhoneInputValue("");
+        }
+    };
+    const handleNameBlur = () => {
+        setShowNameSearch(false);
+        setNameInputValue("");
+    };
+    const handlePhoneBlur = () => {
+        setShowPhoneSearch(false);
+        setPhoneInputValue("");
+    };
+
+    const toggleHealthArrow = () => {
+        setHealthArrowExpanded(prev => !prev);
+    };
+
+    const handleSelectHealth = (opt: string) => {
+        setSelectedHealthFilter(opt);
+        // Reset mũi tên về '>' như ban đầu
+        setHealthArrowExpanded(false);
+    };
+
     return (
         <div className="patients-page">
             {/* Tiêu đề trang */}
@@ -62,7 +164,7 @@ const PatientsPage: React.FC = () => {
             {/*Button*/}
             <div className="action-buttons">
                 <Button variant="primary" className="me-2">Thêm mới</Button>
-                <Button variant="secondary">Bộ lọc</Button>
+                {/*<Button variant="secondary">Bộ lọc</Button>*/}
             </div>
 
             {/* Bảng danh sách bệnh nhân */}
@@ -70,17 +172,80 @@ const PatientsPage: React.FC = () => {
                 <thead>
                     <tr>
                         <th>STT</th>
-                        <th>Tên bệnh nhân</th>
+                        <th className="th-with-popup">
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                                <span>Tên bệnh nhân</span>
+                                <span className="search-icon" onClick={handleToggleNameSearch} title="Tìm bệnh nhân">
+                                    <FaSearchIcon />
+                                </span>
+                            </div>
+                            {showNameSearch && (
+                                <div className="search-popup" onMouseDown={e => e.preventDefault()}>
+                                    <input
+                                        ref={nameInputRef}
+                                        type="text"
+                                        placeholder="Tìm bệnh nhân"
+                                        value={nameInputValue}
+                                        onChange={e => setNameInputValue(e.target.value)}
+                                        onKeyDown={handleNameKeyDown}
+                                        onBlur={handleNameBlur}
+                                        className="search-input"
+                                    />
+                                </div>
+                            )}
+                        </th>
                         <th>Tuổi</th>
-                        <th>SĐT</th>
+                        <th className="th-with-popup">
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                                <span>SĐT</span>
+                                <span className="search-icon" onClick={handleTogglePhoneSearch} title="Tìm số điện thoại">
+                                    <FaSearchIcon />
+                                </span>
+                            </div>
+                            {showPhoneSearch && (
+                                <div className="search-popup" onMouseDown={e => e.preventDefault()}>
+                                    <input
+                                        ref={phoneInputRef}
+                                        type="text"
+                                        placeholder="Tìm số điện thoại"
+                                        value={phoneInputValue}
+                                        onChange={e => setPhoneInputValue(e.target.value)}
+                                        onKeyDown={handlePhoneKeyDown}
+                                        onBlur={handlePhoneBlur}
+                                        className="search-input"
+                                    />
+                                </div>
+                            )}
+                        </th>
                         <th>Địa chỉ</th>
-                        <th>Tình trạng sức khỏe</th>
+                        <th className="th-with-popup" ref={healthHeaderRef}>
+                            <div
+                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                                onClick={(e) => { e.stopPropagation(); toggleHealthArrow(); }}
+                                title="Lọc tình trạng"
+                            >
+                                <span>Tình trạng sức khỏe</span>
+                                <span style={{ cursor: 'pointer', display: 'inline-flex' }}>
+                                    {healthArrowExpanded ? <FaAngleDownIcon /> : <FaAngleRightIcon />}
+                                </span>
+                            </div>
+                            {healthArrowExpanded && (
+                                <ul className="health-filter-popup">
+                                    {healthOptions.map(opt => (
+                                        <li key={opt}
+                                            className="health-filter-item"
+                                            onClick={(e) => { e.stopPropagation(); handleSelectHealth(opt); }}
+                                        >{opt}</li>
+                                    ))}
+                                </ul>
+                            )}
+                        </th>
                         <th>Thuốc đang sử dụng</th>
                         <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {samplePatients.map((patient, index) => (
+                    {filteredPatients.map((patient, index) => (
                         <tr key={patient.id}>
                             <td>{index + 1}</td>
                             <td>{patient.tenBenhNhan}</td>
@@ -106,6 +271,11 @@ const PatientsPage: React.FC = () => {
                             </td>
                         </tr>
                     ))}
+                    {filteredPatients.length === 0 && (
+                        <tr>
+                            <td colSpan={8} style={{ textAlign: 'center', color: '#888' }}>Không có dữ liệu phù hợp</td>
+                        </tr>
+                    )}
                 </tbody>
             </Table>
         </div>
@@ -186,7 +356,7 @@ declare global { interface Window { __patientsModalsInitialized?: boolean; } }
         
         // Xử lý xóa thuốc khỏi danh sách
         overlay.querySelector('.selected-drugs-list')?.addEventListener('click', (e) => {
-            const target = e.target as HTMLElement;
+            const target = (e.target as HTMLElement);
             if (target.classList.contains('btn-remove-drug')) {
                 const drugId = target.getAttribute('data-drug-id');
                 if (drugId) {
