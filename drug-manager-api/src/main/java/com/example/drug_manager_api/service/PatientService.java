@@ -3,6 +3,7 @@ package com.example.drug_manager_api.service;
 import com.example.drug_manager_api.model.Patient;
 import com.example.drug_manager_api.repository.DrugRepository;
 import com.example.drug_manager_api.repository.PatientRepository;
+import com.example.drug_manager_api.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,9 @@ public class PatientService {
     @Autowired
     private DrugRepository drugRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     public List<Patient> findAll() {
         return patientRepository.findAll();
     }
@@ -38,6 +42,7 @@ public class PatientService {
         enforceRequiredFields(patient);
         validateDrugsExist(patient.getThuocDangSuDung());
         patient.setFullName(patient.getTenBenhNhan());
+        syncLinkedUser(patient);
         return patientRepository.save(patient);
     }
 
@@ -56,6 +61,7 @@ public class PatientService {
             existing.setDiaChi(payload.getDiaChi());
             existing.setTinhTrangSucKhoe(payload.getTinhTrangSucKhoe());
             existing.setThuocDangSuDung(payload.getThuocDangSuDung());
+            syncLinkedUser(existing);
             return patientRepository.save(existing);
         });
     }
@@ -103,5 +109,50 @@ public class PatientService {
                     "Tên bệnh nhân không được để trống"
             );
         }
+    }
+
+    private void syncLinkedUser(Patient patient) {
+        if (patient == null) return;
+        String name = patient.getTenBenhNhan();
+        if (name == null || name.isBlank()) {
+            patient.setLinkedUserId(null);
+            return;
+        }
+        userRepository.findByFullNameIgnoreCase(name.trim())
+                .ifPresentOrElse(
+                        user -> patient.setLinkedUserId(user.getId()),
+                        () -> patient.setLinkedUserId(null)
+                );
+    }
+
+    public Optional<Patient> findByFullName(String fullName) {
+        if (fullName == null || fullName.isBlank()) return Optional.empty();
+        return patientRepository.findByTenBenhNhanIgnoreCase(fullName.trim());
+    }
+
+    public Optional<Patient> findByUserUsername(String username) {
+        if (username == null || username.isBlank()) return Optional.empty();
+        return userRepository.findByUsername(username.trim())
+                .flatMap(user -> {
+                    if (user.getId() != null) {
+                        Optional<Patient> byLink = patientRepository.findByLinkedUserId(user.getId());
+                        if (byLink.isPresent()) {
+                            return byLink;
+                        }
+                    }
+                    String name = user.getFullName();
+                    if (name == null || name.isBlank()) {
+                        return Optional.empty();
+                    }
+                    Optional<Patient> byName = patientRepository.findByTenBenhNhanIgnoreCase(name.trim());
+                    if (byName.isPresent() && user.getId() != null) {
+                        Patient patient = byName.get();
+                        if (patient.getLinkedUserId() == null || !patient.getLinkedUserId().equals(user.getId())) {
+                            patient.setLinkedUserId(user.getId());
+                            patientRepository.save(patient);
+                        }
+                    }
+                    return byName;
+                });
     }
 }

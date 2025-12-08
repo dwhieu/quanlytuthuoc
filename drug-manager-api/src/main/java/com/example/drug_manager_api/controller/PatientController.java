@@ -34,6 +34,26 @@ public class PatientController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/by-full-name")
+    public ResponseEntity<Patient> getByFullName(@RequestParam("name") String fullName) {
+        if (fullName == null || fullName.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        return patientService.findByFullName(fullName)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/by-user/{username}")
+    public ResponseEntity<Patient> getByUsername(@PathVariable("username") String username) {
+        if (username == null || username.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+        return patientService.findByUserUsername(username)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PostMapping
     public ResponseEntity<Patient> create(@RequestBody Patient patient) {
         logger.info("Incoming request to create patient: name={}, drugs={}",

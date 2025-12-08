@@ -30,6 +30,9 @@ public class Patient {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "linked_user_id")
+    private Long linkedUserId;
     private Integer tuoi;
     private String sdt;
     private String diaChi;
