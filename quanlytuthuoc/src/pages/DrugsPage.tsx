@@ -3,6 +3,19 @@ import { Button, Table } from "react-bootstrap";
 import { FaEdit, FaTrash, FaSearch, FaAngleRight, FaAngleDown } from "react-icons/fa";
 import '../styles/DrugsPage.css';
 
+type Drug = {
+    id: number;
+    tenThuoc: string;
+    loaiThuoc: string;
+    soLuong: number;
+    hsd: string;
+    ngayNhap: string;
+    nhaCungCap: string;
+    tinhTrang: string;
+};
+
+const API_BASE = "http://localhost:8000/api";
+
 // Cast icons to component types to satisfy TypeScript
 const FaEditIcon = FaEdit as unknown as React.ComponentType<any>;
 const FaTrashIcon = FaTrash as unknown as React.ComponentType<any>;
@@ -11,133 +24,9 @@ const FaAngleRightIcon = FaAngleRight as unknown as React.ComponentType<any>;
 const FaAngleDownIcon = FaAngleDown as unknown as React.ComponentType<any>;
 
 const DrugsPage: React.FC = () => {
-    //Data thuốc mẫu
-    const initialDrugs = [
-        { 
-            id: 1,
-            tenThuoc: "Paracetamol 500mg",
-            loaiThuoc: "Giảm đau hạ sốt",
-            soLuong: 150,
-            hsd: "2025-12-31",
-            ngayNhap: "2024-01-15",
-            nhaCungCap: "Công ty Dược phẩm ABC",
-            tinhTrang: "Còn hàng"
-        },
-        {
-            id: 2,
-            tenThuoc: "Amoxicillin 500mg",
-            loaiThuoc: "Kháng sinh",
-            soLuong: 8,
-            hsd: "2025-06-30",
-            ngayNhap: "2024-02-20",
-            nhaCungCap: "Công ty Dược phẩm XYZ",
-            tinhTrang: "SL còn ít"
-        },
-        {
-            id: 3,
-            tenThuoc: "Vitamin C 1000mg",
-            loaiThuoc: "Vitamin",
-            soLuong: 0,
-            hsd: "2025-08-15",
-            ngayNhap: "2023-03-10",
-            nhaCungCap: "Công ty Dược phẩm 123",
-            tinhTrang: "Hết hàng"
-        },
-        {
-            id: 4,
-            tenThuoc: "Ibuprofen 400mg",
-            loaiThuoc: "Giảm đau kháng viêm",
-            soLuong: 45,
-            hsd: "2024-12-20",
-            ngayNhap: "2023-11-05",
-            nhaCungCap: "Công ty Dược ABC",
-            tinhTrang: "Sắp hết HSD"
-        },
-        {
-            id: 5,
-            tenThuoc: "Omeprazole 20mg",
-            loaiThuoc: "Điều trị đau dạ dày",
-            soLuong: 120,
-            hsd: "2026-03-10",
-            ngayNhap: "2024-05-15",
-            nhaCungCap: "Công ty Dược phẩm DEF",
-            tinhTrang: "Còn hàng"
-        },
-        {
-            id: 6,
-            tenThuoc: "Cetirizine 10mg",
-            loaiThuoc: "Thuốc dị ứng",
-            soLuong: 5,
-            hsd: "2025-09-30",
-            ngayNhap: "2024-01-20",
-            nhaCungCap: "Công ty Dược XYZ",
-            tinhTrang: "SL còn ít"
-        },
-        {
-            id: 7,
-            tenThuoc: "Metformin 850mg",
-            loaiThuoc: "Điều trị tiểu đường",
-            soLuong: 200,
-            hsd: "2025-11-25",
-            ngayNhap: "2024-06-10",
-            nhaCungCap: "Công ty Dược Việt",
-            tinhTrang: "Còn hàng"
-        },
-        {
-            id: 8,
-            tenThuoc: "Aspirin 100mg",
-            loaiThuoc: "Chống đông máu",
-            soLuong: 80,
-            hsd: "2024-12-05",
-            ngayNhap: "2023-10-15",
-            nhaCungCap: "Công ty Dược 123",
-            tinhTrang: "Sắp hết HSD"
-        },
-        {
-            id: 9,
-            tenThuoc: "Loratadine 10mg",
-            loaiThuoc: "Thuốc dị ứng",
-            soLuong: 0,
-            hsd: "2025-07-20",
-            ngayNhap: "2023-08-01",
-            nhaCungCap: "Công ty Dược ABC",
-            tinhTrang: "Hết hàng"
-        },
-        {
-            id: 10,
-            tenThuoc: "Atorvastatin 20mg",
-            loaiThuoc: "Hạ mỡ máu",
-            soLuong: 6,
-            hsd: "2026-02-15",
-            ngayNhap: "2024-08-10",
-            nhaCungCap: "Công ty Dược Phương Đông",
-            tinhTrang: "SL còn ít"
-        },
-        {
-            id: 11,
-            tenThuoc: "Salbutamol 100mcg",
-            loaiThuoc: "Thuốc hen suyễn",
-            soLuong: 90,
-            hsd: "2025-10-10",
-            ngayNhap: "2024-03-05",
-            nhaCungCap: "Công ty Dược phẩm Hà Nội",
-            tinhTrang: "Còn hàng"
-        }
-    ];
-
-    const [drugs, setDrugs] = useState(initialDrugs);
-
-    // Hàm xác định tình trạng thuốc
-    const getTinhTrang = (soLuong: number, hsd: string): string => {
-        const today = new Date();
-        const expiryDate = new Date(hsd);
-        const daysUntilExpiry = Math.floor((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-
-        if (soLuong === 0) return "Hết hàng";
-        if (daysUntilExpiry <= 30 && daysUntilExpiry > 0) return "Sắp hết HSD";
-        if (soLuong <= 10) return "SL còn ít";
-        return "Còn hàng";
-    };
+    const [drugs, setDrugs] = useState<Drug[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // State bộ lọc
     const [showNameSearch, setShowNameSearch] = useState(false);
@@ -186,6 +75,26 @@ const DrugsPage: React.FC = () => {
         "Hạ mỡ máu",
         "Thuốc hen suyễn"
     ];
+
+    useEffect(() => {
+        const loadDrugs = async () => {
+            setLoading(true);
+            try {
+                const res = await fetch(`${API_BASE}/drugs`);
+                if (!res.ok) {
+                    throw new Error(await res.text());
+                }
+                const data = await res.json();
+                setDrugs(Array.isArray(data) ? data : []);
+                setError(null);
+            } catch (err) {
+                setError('Không tải được dữ liệu thuốc');
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadDrugs();
+    }, []);
 
     useEffect(() => { if (showNameSearch) nameInputRef.current?.focus(); }, [showNameSearch]);
 
@@ -265,30 +174,37 @@ const DrugsPage: React.FC = () => {
         }));
     };
 
-    const handleSubmitAdd = () => {
-        // Validate form
+    const handleSubmitAdd = async () => {
         if (!formData.tenThuoc || !formData.loaiThuoc || !formData.soLuong || !formData.hsd || !formData.ngayNhap || !formData.nhaCungCap) {
             alert("Vui lòng điền đầy đủ thông tin!");
             return;
         }
 
-        // Tạo thuốc mới
-        const newDrug = {
-            id: Math.max(...drugs.map(d => d.id), 0) + 1,
+        const payload = {
             tenThuoc: formData.tenThuoc,
             loaiThuoc: formData.loaiThuoc,
             soLuong: parseInt(formData.soLuong) || 0,
             hsd: formData.hsd,
             ngayNhap: formData.ngayNhap,
-            nhaCungCap: formData.nhaCungCap,
-            tinhTrang: getTinhTrang(parseInt(formData.soLuong) || 0, formData.hsd)
+            nhaCungCap: formData.nhaCungCap
         };
 
-        // Thêm vào danh sách
-        setDrugs(prev => [...prev, newDrug]);
-        
-        handleCloseAddPopup();
-        alert("Thêm thuốc mới thành công!");
+        try {
+            const res = await fetch(`${API_BASE}/drugs`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) {
+                throw new Error(await res.text());
+            }
+            const created: Drug = await res.json();
+            setDrugs(prev => [...prev, created]);
+            handleCloseAddPopup();
+            alert("Thêm thuốc mới thành công!");
+        } catch (err) {
+            alert("Không thể thêm thuốc. Vui lòng thử lại.");
+        }
     };
 
     // Handlers cho popup chỉnh sửa thuốc
@@ -317,30 +233,50 @@ const DrugsPage: React.FC = () => {
         }));
     };
 
-    const handleSubmitEdit = () => {
-        // Validate form
+    const handleSubmitEdit = async () => {
         if (!editFormData.tenThuoc || !editFormData.loaiThuoc || !editFormData.soLuong || !editFormData.hsd || !editFormData.ngayNhap || !editFormData.nhaCungCap) {
             alert("Vui lòng điền đầy đủ thông tin!");
             return;
         }
 
-        // Cập nhật thuốc
-        const updatedDrug = {
-            id: editFormData.id,
+        const payload = {
             tenThuoc: editFormData.tenThuoc,
             loaiThuoc: editFormData.loaiThuoc,
             soLuong: parseInt(editFormData.soLuong) || 0,
             hsd: editFormData.hsd,
             ngayNhap: editFormData.ngayNhap,
-            nhaCungCap: editFormData.nhaCungCap,
-            tinhTrang: getTinhTrang(parseInt(editFormData.soLuong) || 0, editFormData.hsd)
+            nhaCungCap: editFormData.nhaCungCap
         };
 
-        // Cập nhật trong danh sách
-        setDrugs(prev => prev.map(d => d.id === updatedDrug.id ? updatedDrug : d));
-        
-        handleCloseEditPopup();
-        alert("Cập nhật thông tin thuốc thành công!");
+        try {
+            const res = await fetch(`${API_BASE}/drugs/${editFormData.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) {
+                throw new Error(await res.text());
+            }
+            const updated: Drug = await res.json();
+            setDrugs(prev => prev.map(d => d.id === updated.id ? updated : d));
+            handleCloseEditPopup();
+            alert("Cập nhật thông tin thuốc thành công!");
+        } catch (err) {
+            alert("Không thể cập nhật thuốc. Vui lòng thử lại.");
+        }
+    };
+
+    const handleDelete = async (id: number) => {
+        if (!window.confirm("Xóa thuốc này?")) return;
+        try {
+            const res = await fetch(`${API_BASE}/drugs/${id}`, { method: 'DELETE' });
+            if (!res.ok && res.status !== 204) {
+                throw new Error('Delete failed');
+            }
+            setDrugs(prev => prev.filter(d => d.id !== id));
+        } catch (err) {
+            alert("Không thể xóa thuốc. Vui lòng thử lại.");
+        }
     };
 
     return (
@@ -355,6 +291,9 @@ const DrugsPage: React.FC = () => {
                 <Button variant="primary" className="me-2" onClick={handleOpenAddPopup}>THÊM MỚI THUỐC</Button>
                 {/*<Button variant="secondary">Bộ Lọc</Button>*/}
             </div>
+
+            {error && <div style={{ color: '#dc3545', marginBottom: 12 }}>{error}</div>}
+            {loading && <div style={{ marginBottom: 12 }}>Đang tải dữ liệu...</div>}
 
             {/* Bảng danh sách thuốc */}
             <Table bordered hover>
@@ -430,7 +369,7 @@ const DrugsPage: React.FC = () => {
                                 <span className="icon-edit" title="Chỉnh sửa" onClick={() => handleOpenEditPopup(drug)}>
                                     <FaEditIcon />
                                 </span>
-                                <span className="icon-delete" title="Xóa">
+                                <span className="icon-delete" title="Xóa" onClick={() => handleDelete(drug.id)}>
                                     <FaTrashIcon />
                                 </span>
                             </td>

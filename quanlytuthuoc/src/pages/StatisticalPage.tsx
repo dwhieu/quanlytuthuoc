@@ -12,7 +12,25 @@ import {
   Legend,
 } from "recharts";
 
-type RangeKey = "7d" | "1m" | "6m" | "1y";
+type Drug = {
+  id: number;
+  tenThuoc: string;
+  loaiThuoc: string;
+  soLuong: number;
+  hsd: string;
+  ngayNhap: string;
+  nhaCungCap: string;
+};
+
+type Patient = {
+  id: number;
+  tinhTrangSucKhoe?: string;
+  createdAt?: string;
+};
+
+type RangeKey = "week" | "month" | "year";
+
+const API_BASE = "http://localhost:8000/api";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 24 },
@@ -24,60 +42,144 @@ const containerStagger = {
   visible: { transition: { staggerChildren: 0.08 } },
 };
 
-// Mock helpers to generate demo data based on selected range
-const genPatientsByMonth = (range: RangeKey) => {
-  const base = [
-    { label: "01", patients: 32 },
-    { label: "02", patients: 44 },
-    { label: "03", patients: 51 },
-    { label: "04", patients: 39 },
-    { label: "05", patients: 62 },
-    { label: "06", patients: 57 },
-    { label: "07", patients: 48 },
-    { label: "08", patients: 66 },
-    { label: "09", patients: 72 },
-    { label: "10", patients: 59 },
-    { label: "11", patients: 63 },
-    { label: "12", patients: 71 },
-  ];
-  if (range === "7d") return base.slice(0, 7).map((d, i) => ({ label: `D${i + 1}`, patients: d.patients }));
-  if (range === "1m") return base.slice(0, 4).map((d, i) => ({ label: `W${i + 1}`, patients: d.patients }));
-  if (range === "6m") return base.slice(0, 6);
-  return base; // 1y
-};
-
-const genDrugStatus = (range: RangeKey) => {
-  const categories = ["Paracetamol", "Amoxicillin", "Vitamin C", "Ibuprofen", "Cefixime", "Omeprazole"];
-  const factor = range === "7d" ? 0.25 : range === "1m" ? 0.4 : range === "6m" ? 0.7 : 1;
-  return categories.map((c, i) => ({
-    name: c,
-    inStock: Math.round((300 - i * 20) * factor),
-    nearExpiry: Math.round((60 + (i % 3) * 10) * factor),
-    expired: Math.round((15 + (i % 2) * 8) * factor),
-  }));
-};
-
 const numberWithSpaces = (n: number) => n.toLocaleString("vi-VN");
 
+const daysUntil = (hsd?: string) => {
+  if (!hsd) return Number.POSITIVE_INFINITY;
+  const diff = new Date(hsd).getTime() - Date.now();
+  return Math.floor(diff / (1000 * 60 * 60 * 24));
+};
+
+const RANGE_OPTIONS: { key: RangeKey; label: string }[] = [
+  { key: "week", label: "7 ngày gần nhất" },
+  { key: "month", label: "1 tháng gần nhất" },
+  { key: "year", label: "1 năm gần nhất" },
+];
+
+const RANGE_DAYS: Record<RangeKey, number> = {
+  week: 7,
+  month: 30,
+  year: 365,
+};
+
+const parseDateValue = (value?: string | null): Date | null => {
+  if (!value) return null;
+  const direct = new Date(value);
+  if (!Number.isNaN(direct.getTime())) return direct;
+  const fallback = new Date(`${value}T00:00:00`);
+  return Number.isNaN(fallback.getTime()) ? null : fallback;
+};
+
+const filterByRange = <T,>(items: T[], getDate: (item: T) => Date | null, range: RangeKey): T[] => {
+  const days = RANGE_DAYS[range];
+  const threshold = Date.now() - days * 24 * 60 * 60 * 1000;
+  return items.filter(item => {
+    const date = getDate(item);
+    if (!date) return true;
+    return date.getTime() >= threshold;
+  });
+};
+
 const StatisticalPage: React.FC = () => {
-  const [rangeTop, setRangeTop] = React.useState<RangeKey>("6m");
-  const [rangeBottom, setRangeBottom] = React.useState<RangeKey>("1y");
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [drugs, setDrugs] = React.useState<Drug[]>([]);
+  const [patients, setPatients] = React.useState<Patient[]>([]);
+  const [summaryRange, setSummaryRange] = React.useState<RangeKey>("month");
+  const [chartRange, setChartRange] = React.useState<RangeKey>("year");
 
-  // Dữ liệu theo bộ lọc phía trên (dùng cho thẻ tổng quan)
-  const patientsDataTop = React.useMemo(() => genPatientsByMonth(rangeTop), [rangeTop]);
-  const drugStatusTop = React.useMemo(() => genDrugStatus(rangeTop), [rangeTop]);
+  const patientsForSummary = React.useMemo(
+    () => filterByRange(patients, p => parseDateValue(p.createdAt ?? null), summaryRange),
+    [patients, summaryRange]
+  );
 
-  // Dữ liệu theo bộ lọc phía dưới (dùng cho biểu đồ bên dưới)
-  const patientsDataBottom = React.useMemo(() => genPatientsByMonth(rangeBottom), [rangeBottom]);
-  const drugStatusData = React.useMemo(() => genDrugStatus(rangeBottom), [rangeBottom]);
+  const drugsForSummary = React.useMemo(
+    () => filterByRange(drugs, d => parseDateValue(d.ngayNhap ?? null), summaryRange),
+    [drugs, summaryRange]
+  );
 
-  // Tính tổng chỉ dựa trên bộ lọc phía trên
+  const patientsForCharts = React.useMemo(
+    () => filterByRange(patients, p => parseDateValue(p.createdAt ?? null), chartRange),
+    [patients, chartRange]
+  );
+
+  const drugsForCharts = React.useMemo(
+    () => filterByRange(drugs, d => parseDateValue(d.ngayNhap ?? null), chartRange),
+    [drugs, chartRange]
+  );
+
+  React.useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [drugRes, patientRes] = await Promise.all([
+          fetch(`${API_BASE}/drugs`),
+          fetch(`${API_BASE}/patients`)
+        ]);
+        if (!drugRes.ok) throw new Error(await drugRes.text());
+        if (!patientRes.ok) throw new Error(await patientRes.text());
+        const drugData = await drugRes.json();
+        const patientData = await patientRes.json();
+        setDrugs(Array.isArray(drugData) ? drugData : []);
+        setPatients(Array.isArray(patientData) ? patientData : []);
+        setError(null);
+      } catch (e) {
+        setError("Không tải được dữ liệu thống kê");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
   const totals = React.useMemo(() => {
-    const patients = patientsDataTop.reduce((s, d) => s + d.patients, 0);
-    const inStock = drugStatusTop.reduce((s, d) => s + d.inStock, 0);
-    const suppliers = 18; // demo
-    return { patients, inStock, suppliers };
-  }, [patientsDataTop, drugStatusTop]);
+    const patientsTotal = patientsForSummary.length;
+    const inStock = drugsForSummary.reduce((s, d) => s + (d.soLuong || 0), 0);
+    const suppliers = new Set(drugsForSummary.map(d => d.nhaCungCap).filter(Boolean)).size;
+    return { patients: patientsTotal, inStock, suppliers };
+  }, [patientsForSummary, drugsForSummary]);
+
+  const patientChartData = React.useMemo(() => {
+    const counts = new Map<string, number>();
+
+    patientsForCharts.forEach(patient => {
+      const date = parseDateValue(patient.createdAt ?? null);
+      const key = date ? date.toISOString().slice(0, 10) : "unknown";
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    });
+
+    if (!counts.size) {
+      return [{ label: "Chưa có dữ liệu", patients: 0 }];
+    }
+
+    const formatter = new Intl.DateTimeFormat("vi-VN");
+
+    return Array.from(counts.entries())
+      .map(([key, value]) => {
+        if (key === "unknown") {
+          return { label: "Chưa rõ ngày", patients: value, sort: Number.POSITIVE_INFINITY };
+        }
+        const date = new Date(`${key}T00:00:00`);
+        return { label: formatter.format(date), patients: value, sort: date.getTime() };
+      })
+      .sort((a, b) => a.sort - b.sort)
+      .map(({ sort, ...rest }) => rest);
+  }, [patientsForCharts]);
+
+  const drugStatusData = React.useMemo(() => {
+    const source = drugsForCharts.length
+      ? drugsForCharts
+      : [{ id: -1, tenThuoc: "Chưa có dữ liệu", soLuong: 0, hsd: "", loaiThuoc: "", ngayNhap: "", nhaCungCap: "" } as Drug];
+
+    return source.map(d => {
+      const qty = d.soLuong || 0;
+      const days = daysUntil(d.hsd);
+      const nearExpiry = days > 0 && days <= 30 ? qty : 0;
+      const expired = days <= 0 ? qty : 0;
+      const inStock = days > 0 ? qty : 0;
+      return { name: d.tenThuoc, inStock, nearExpiry, expired };
+    });
+  }, [drugsForCharts]);
 
   return (
     <div className="p-2">
@@ -85,16 +187,24 @@ const StatisticalPage: React.FC = () => {
         <h4 className="fw-semibold">THỐNG KÊ</h4>
       </motion.div>
 
-      {/* Top summary with filter */}
+      {error && <div style={{ color: '#dc3545', marginBottom: 12 }}>{error}</div>}
+      {loading && <div style={{ marginBottom: 12 }}>Đang tải dữ liệu...</div>}
+
+      {/* Top summary */}
       <Card className="mb-4 shadow-sm">
         <Card.Body>
-          <div className="d-flex align-items-center gap-2 mb-3">
-            <div className="fw-semibold">Bộ lọc</div>
-            <Form.Select size="sm" style={{ width: 220 }} value={rangeTop} onChange={(e) => setRangeTop(e.target.value as RangeKey)}>
-              <option value="7d">7 ngày gần nhất</option>
-              <option value="1m">1 tháng gần nhất</option>
-              <option value="6m">6 tháng gần nhất</option>
-              <option value="1y">1 năm gần nhất</option>
+          <div className="d-flex justify-content-start align-items-center mb-3 flex-wrap gap-2">
+            <div className="fw-semibold text-muted">Bộ lọc</div>
+            <Form.Select
+              size="sm"
+              value={summaryRange}
+              onChange={e => setSummaryRange(e.target.value as RangeKey)}
+              style={{ maxWidth: 220 }}
+              aria-label="Chọn khoảng thời gian tổng hợp"
+            >
+              {RANGE_OPTIONS.map(opt => (
+                <option key={opt.key} value={opt.key}>{opt.label}</option>
+              ))}
             </Form.Select>
           </div>
 
@@ -125,16 +235,21 @@ const StatisticalPage: React.FC = () => {
         </Card.Body>
       </Card>
 
-      {/* Bottom charts with its own filter */}
+      {/* Charts */}
       <Card className="mb-4 shadow-sm">
         <Card.Body>
-          <div className="d-flex align-items-center gap-2 mb-3">
-            <div className="fw-semibold">Bộ lọc</div>
-            <Form.Select size="sm" style={{ width: 220 }} value={rangeBottom} onChange={(e) => setRangeBottom(e.target.value as RangeKey)}>
-              <option value="7d">7 ngày gần nhất</option>
-              <option value="1m">1 tháng gần nhất</option>
-              <option value="6m">6 tháng gần nhất</option>
-              <option value="1y">1 năm gần nhất</option>
+          <div className="d-flex justify-content-start align-items-center mb-3 flex-wrap gap-2">
+            <div className="fw-semibold text-muted">Bộ lọc</div>
+            <Form.Select
+              size="sm"
+              value={chartRange}
+              onChange={e => setChartRange(e.target.value as RangeKey)}
+              style={{ maxWidth: 220 }}
+              aria-label="Chọn khoảng thời gian biểu đồ"
+            >
+              {RANGE_OPTIONS.map(opt => (
+                <option key={opt.key} value={opt.key}>{opt.label}</option>
+              ))}
             </Form.Select>
           </div>
 
@@ -143,10 +258,10 @@ const StatisticalPage: React.FC = () => {
               <motion.div variants={fadeInUp} initial="hidden" animate="visible">
                 <Card className="h-100 border-0 shadow-sm">
                   <Card.Body>
-                    <div className="fw-semibold mb-2">Biểu đồ cột thể hiện số lượng bệnh nhân</div>
+                    <div className="fw-semibold mb-2">Số bệnh nhân theo ngày</div>
                     <div style={{ width: "100%", height: 300 }}>
                       <ResponsiveContainer>
-                        <BarChart data={patientsDataBottom} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <BarChart data={patientChartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                           <XAxis dataKey="label" tick={{ fontSize: 12 }} />
                           <YAxis tick={{ fontSize: 12 }} />

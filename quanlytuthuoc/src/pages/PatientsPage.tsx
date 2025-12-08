@@ -1,7 +1,27 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Table } from "react-bootstrap";
 import { FaEdit, FaTrash, FaSearch, FaAngleRight, FaAngleDown } from "react-icons/fa";
 import '../styles/PatientsPage.css';
+
+type Patient = {
+    id: number;
+    tenBenhNhan: string;
+    tuoi: number;
+    sdt: string;
+    diaChi: string;
+    tinhTrangSucKhoe: string;
+    thuocDangSuDung: string;
+    createdAt?: string;
+};
+
+type DrugOption = {
+    id: number;
+    tenThuoc: string;
+    soLuong: number;
+    tinhTrang: string;
+};
+
+const API_BASE = "http://localhost:8000/api";
 
 // Cast icons to component types to satisfy TypeScript
 const FaEditIcon = FaEdit as unknown as React.ComponentType<any>;
@@ -10,50 +30,11 @@ const FaSearchIcon = FaSearch as unknown as React.ComponentType<any>;
 const FaAngleRightIcon = FaAngleRight as unknown as React.ComponentType<any>;
 const FaAngleDownIcon = FaAngleDown as unknown as React.ComponentType<any>;
 
-// Danh sách thuốc có sẵn (tất cả trừ hết hàng)
-const availableDrugs = [
-    { id: 1, tenThuoc: "Paracetamol 500mg", soLuong: 150, tinhTrang: "Còn hàng" },
-    { id: 2, tenThuoc: "Amoxicillin 500mg", soLuong: 8, tinhTrang: "SL còn ít" },
-    { id: 4, tenThuoc: "Ibuprofen 400mg", soLuong: 45, tinhTrang: "Sắp hết HSD" },
-    { id: 5, tenThuoc: "Omeprazole 20mg", soLuong: 120, tinhTrang: "Còn hàng" },
-    { id: 6, tenThuoc: "Cetirizine 10mg", soLuong: 5, tinhTrang: "SL còn ít" },
-    { id: 7, tenThuoc: "Metformin 850mg", soLuong: 200, tinhTrang: "Còn hàng" },
-    { id: 8, tenThuoc: "Aspirin 100mg", soLuong: 80, tinhTrang: "Sắp hết HSD" },
-    { id: 10, tenThuoc: "Atorvastatin 20mg", soLuong: 6, tinhTrang: "SL còn ít" },
-    { id: 11, tenThuoc: "Salbutamol 100mcg", soLuong: 90, tinhTrang: "Còn hàng" }
-];
-
 const PatientsPage: React.FC = () => {
-    //Data bệnh nhân mẫu
-    const samplePatients = [
-        { 
-            id: 1,
-            tenBenhNhan: "Nguyễn Văn A",
-            tuoi: 35,
-            sdt: "0901234567",
-            diaChi: "123 Đường ABC, Q.1, TP.HCM",
-            tinhTrangSucKhoe: "Ổn định",
-            thuocDangSuDung: "Paracetamol, Vitamin C"
-        },
-        {
-            id: 2,
-            tenBenhNhan: "Trần Thị B",
-            tuoi: 42,
-            sdt: "0912345678",
-            diaChi: "456 Đường XYZ, Q.3, TP.HCM",
-            tinhTrangSucKhoe: "Cần theo dõi",
-            thuocDangSuDung: "Amoxicillin"
-        },
-        {
-            id: 3,
-            tenBenhNhan: "Lê Văn C",
-            tuoi: 28,
-            sdt: "0923456789",
-            diaChi: "789 Đường DEF, Q.5, TP.HCM",
-            tinhTrangSucKhoe: "Ổn định",
-            thuocDangSuDung: "Ibuprofen"
-        }
-    ];
+    const [patients, setPatients] = useState<Patient[]>([]);
+    const [drugs, setDrugs] = useState<DrugOption[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // State bộ lọc
     const [showNameSearch, setShowNameSearch] = useState(false);
@@ -71,6 +52,92 @@ const PatientsPage: React.FC = () => {
     const nameInputRef = useRef<HTMLInputElement | null>(null);
     const phoneInputRef = useRef<HTMLInputElement | null>(null);
     const healthHeaderRef = useRef<HTMLTableHeaderCellElement | null>(null);
+
+    const loadPatients = useCallback(async () => {
+        setLoading(true);
+        try {
+            const res = await fetch(`${API_BASE}/patients`);
+            if (!res.ok) {
+                throw new Error(await res.text());
+            }
+            const data = await res.json();
+            setPatients(Array.isArray(data) ? data : []);
+            setError(null);
+        } catch (err) {
+            setError('Không tải được dữ liệu bệnh nhân');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    const upsertPatient = useCallback((incoming: Patient) => {
+        if (!incoming || typeof incoming.id !== 'number') return;
+        setPatients(prev => {
+            const index = prev.findIndex(p => p.id === incoming.id);
+            if (index >= 0) {
+                const clone = prev.slice();
+                clone[index] = incoming;
+                return clone;
+            }
+            return [...prev, incoming];
+        });
+    }, []);
+
+    useEffect(() => {
+        loadPatients();
+    }, [loadPatients]);
+
+    useEffect(() => {
+        const loadDrugs = async () => {
+            try {
+                const res = await fetch(`${API_BASE}/drugs`);
+                if (!res.ok) {
+                    throw new Error(await res.text());
+                }
+                const data = await res.json();
+                const normalized: DrugOption[] = Array.isArray(data)
+                    ? data.map((drug: any) => ({
+                        id: drug.id,
+                        tenThuoc: drug.tenThuoc,
+                        soLuong: drug.soLuong ?? 0,
+                        tinhTrang: drug.tinhTrang ?? ""
+                    }))
+                    : [];
+                setDrugs(normalized);
+            } catch (err) {
+                setDrugs([]);
+            }
+        };
+        loadDrugs();
+    }, []);
+
+    useEffect(() => {
+        window.__setPatientsAvailableDrugs?.(drugs);
+    }, [drugs]);
+
+    useEffect(() => {
+        return () => {
+            window.__setPatientsAvailableDrugs?.([]);
+        };
+    }, []);
+
+    useEffect(() => {
+        window.__refreshPatientsList = loadPatients;
+        return () => {
+            if (window.__refreshPatientsList === loadPatients) {
+                window.__refreshPatientsList = undefined;
+            }
+        };
+    }, [loadPatients]);
+
+    useEffect(() => {
+        window.__upsertPatient = upsertPatient;
+        return () => {
+            if (window.__upsertPatient === upsertPatient) {
+                window.__upsertPatient = undefined;
+            }
+        };
+    }, [upsertPatient]);
 
     useEffect(() => {
         if (showNameSearch) nameInputRef.current?.focus();
@@ -91,7 +158,7 @@ const PatientsPage: React.FC = () => {
     }, [healthArrowExpanded]);
 
     const filteredPatients = useMemo(() => {
-        return samplePatients.filter(p => {
+        return patients.filter(p => {
             const nameOk = nameQuery.trim()
                 ? p.tenBenhNhan.toLowerCase().includes(nameQuery.trim().toLowerCase())
                 : true;
@@ -101,7 +168,7 @@ const PatientsPage: React.FC = () => {
             const healthOk = selectedHealthFilter === "Tất cả" ? true : p.tinhTrangSucKhoe === selectedHealthFilter;
             return nameOk && phoneOk && healthOk;
         });
-    }, [samplePatients, nameQuery, phoneQuery, selectedHealthFilter]);
+    }, [patients, nameQuery, phoneQuery, selectedHealthFilter]);
 
     // Handlers
     const handleToggleNameSearch = () => {
@@ -166,6 +233,9 @@ const PatientsPage: React.FC = () => {
                 <Button variant="primary" className="me-2">Thêm mới</Button>
                 {/*<Button variant="secondary">Bộ lọc</Button>*/}
             </div>
+
+            {error && <div style={{ color: '#dc3545', marginBottom: 12 }}>{error}</div>}
+            {loading && <div style={{ marginBottom: 12 }}>Đang tải dữ liệu...</div>}
 
             {/* Bảng danh sách bệnh nhân */}
             <Table bordered hover>
@@ -246,7 +316,7 @@ const PatientsPage: React.FC = () => {
                 </thead>
                 <tbody>
                     {filteredPatients.map((patient, index) => (
-                        <tr key={patient.id}>
+                        <tr key={patient.id} data-patient-id={patient.id}>
                             <td>{index + 1}</td>
                             <td>{patient.tenBenhNhan}</td>
                             <td>{patient.tuoi}</td>
@@ -285,13 +355,72 @@ const PatientsPage: React.FC = () => {
 export default PatientsPage;
 
 // Add giao diện Popup để Thêm/Sửa bệnh nhân (thông qua DOM)
-declare global { interface Window { __patientsModalsInitialized?: boolean; } }
+declare global {
+    interface Window {
+        __patientsModalsInitialized?: boolean;
+        __setPatientsAvailableDrugs?: (drugs: DrugOption[]) => void;
+        __refreshPatientsList?: () => void;
+        __upsertPatient?: (patient: Patient) => void;
+    }
+}
 (function setupPatientsModals() {
     if (window.__patientsModalsInitialized) return;
     window.__patientsModalsInitialized = true;
 
+    let availableDrugs: DrugOption[] = [];
+
     const ADD_ID = 'patients-add-modal-overlay';
     const EDIT_ID = 'patients-edit-modal-overlay';
+
+    const escapeAttribute = (value: string) => value
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    const escapeHtml = (value: string) => value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+    const renderDrugOptions = (selectEl: HTMLSelectElement) => {
+        const placeholder = '<option value="">-- Chọn thuốc --</option>';
+        const options = availableDrugs
+            .map(drug => {
+                const name = (drug.tenThuoc ?? '').toString();
+                const quantity = Number.isFinite(drug.soLuong) ? drug.soLuong : 0;
+                const status = (drug.tinhTrang ?? '').toString();
+                const safeNameAttr = escapeAttribute(name);
+                const safeStatusAttr = escapeAttribute(status);
+                const safeNameText = escapeHtml(name);
+                const safeStatusText = escapeHtml(status);
+                return `<option value="${drug.id}" data-name="${safeNameAttr}" data-max="${quantity}" data-status="${safeStatusAttr}">${safeNameText} - Còn: ${quantity} (${safeStatusText})</option>`;
+            })
+            .join('');
+        selectEl.innerHTML = placeholder + options;
+    };
+
+    const populateDrugSelect = (overlay: HTMLDivElement) => {
+        const selectEl = overlay.querySelector('.drug-select') as HTMLSelectElement | null;
+        if (!selectEl) return;
+        const previousValue = selectEl.value;
+        renderDrugOptions(selectEl);
+        if (previousValue && Array.isArray(availableDrugs) && availableDrugs.some(drug => String(drug.id) === previousValue)) {
+            selectEl.value = previousValue;
+        }
+    };
+
+    window.__setPatientsAvailableDrugs = (drugs: DrugOption[]) => {
+        availableDrugs = Array.isArray(drugs) ? drugs : [];
+        [document.getElementById(ADD_ID), document.getElementById(EDIT_ID)]
+            .forEach((overlay) => {
+                if (overlay) {
+                    populateDrugSelect(overlay as HTMLDivElement);
+                }
+            });
+    };
 
     // Xử lý logic chọn thuốc kê đơn
     const setupPrescriptionHandler = (overlay: HTMLDivElement) => {
@@ -308,7 +437,7 @@ declare global { interface Window { __patientsModalsInitialized?: boolean; } }
                 const drugsList = Array.from(selectedDrugsMap.entries())
                     .map(([id, drug]) => `
                         <div class="selected-drug-item" data-drug-id="${id}">
-                            <span class="drug-info">${drug.name} - SL: ${drug.quantity}</span>
+                            <span class="drug-info">${escapeHtml(drug.name)} - SL: ${drug.quantity}</span>
                             <button type="button" class="btn-remove-drug" data-drug-id="${id}">×</button>
                         </div>
                     `).join('');
@@ -321,6 +450,9 @@ declare global { interface Window { __patientsModalsInitialized?: boolean; } }
                 hiddenInput.value = drugsText;
             }
         };
+
+        (overlay as any).__patientsSelectedDrugs = selectedDrugsMap;
+        (overlay as any).__updatePatientsSelectedDrugsList = updateSelectedDrugsList;
         
         // Xử lý thêm thuốc
         overlay.querySelector('.btn-add-drug')?.addEventListener('click', () => {
@@ -328,13 +460,18 @@ declare global { interface Window { __patientsModalsInitialized?: boolean; } }
             const quantityEl = overlay.querySelector('.quantity-input') as HTMLInputElement;
             
             const selectedOption = selectEl.options[selectEl.selectedIndex];
-            const drugId = selectedOption.value;
-            const drugName = selectedOption.getAttribute('data-name') || '';
-            const maxQuantity = parseInt(selectedOption.getAttribute('data-max') || '0');
+            const drugId = selectedOption ? selectedOption.value : '';
+            const matchedDrug = availableDrugs.find(drug => String(drug.id) === drugId);
+            const drugName = matchedDrug ? matchedDrug.tenThuoc : '';
+            const maxQuantity = matchedDrug ? Math.max(0, matchedDrug.soLuong ?? 0) : 0;
             const quantity = parseInt(quantityEl.value);
             
             if (!drugId) {
                 alert('Vui lòng chọn thuốc');
+                return;
+            }
+            if (!matchedDrug) {
+                alert('Thuốc không hợp lệ, vui lòng chọn lại');
                 return;
             }
             if (!quantity || quantity <= 0) {
@@ -370,16 +507,16 @@ declare global { interface Window { __patientsModalsInitialized?: boolean; } }
         updateSelectedDrugsList();
     };
 
-    const ensureModal = (type: 'add' | 'edit') => {
-        const overlayId = type === 'add' ? ADD_ID : EDIT_ID;
-        let overlay = document.getElementById(overlayId);
-        if (overlay) return overlay as HTMLDivElement;
+        const ensureModal = (type: 'add' | 'edit') => {
+                const overlayId = type === 'add' ? ADD_ID : EDIT_ID;
+                const existing = document.getElementById(overlayId) as HTMLDivElement | null;
+                if (existing) return existing;
 
-        // Handle listener để đóng popup
-        overlay = document.createElement('div');
-        overlay.id = overlayId;
-        overlay.className = 'patients-modal-overlay';
-        overlay.innerHTML = `
+                // Handle listener để đóng popup
+                const overlayElement = document.createElement('div');
+                overlayElement.id = overlayId;
+                overlayElement.className = 'patients-modal-overlay';
+                overlayElement.innerHTML = `
           <div class="patients-modal" role="dialog" aria-modal="true">
             <div class="modal-header">
               <div class="modal-title">${type === 'add' ? 'Thêm mới bệnh nhân' : 'Chỉnh sửa thông tin bệnh nhân'}</div>
@@ -417,12 +554,7 @@ declare global { interface Window { __patientsModalsInitialized?: boolean; } }
                 <div class="prescription-selector">
                   <div class="prescription-input-group">
                     <select class="drug-select" name="selectedDrug">
-                      <option value="">-- Chọn thuốc --</option>
-                      ${availableDrugs.map(drug => 
-                        `<option value="${drug.id}" data-name="${drug.tenThuoc}" data-max="${drug.soLuong}" data-status="${drug.tinhTrang}">
-                          ${drug.tenThuoc} - Còn: ${drug.soLuong} (${drug.tinhTrang})
-                        </option>`
-                      ).join('')}
+                                            <option value="">-- Chọn thuốc --</option>
                     </select>
                     <input type="number" class="quantity-input" placeholder="SL" min="1" />
                     <button type="button" class="btn-add-drug">Thêm</button>
@@ -438,24 +570,110 @@ declare global { interface Window { __patientsModalsInitialized?: boolean; } }
             </div>
           </div>
         `;
-        document.body.appendChild(overlay);
+        document.body.appendChild(overlayElement);
+
+        populateDrugSelect(overlayElement);
 
 
-        overlay.addEventListener('click', (ev) => {
+        overlayElement.addEventListener('click', (ev) => {
             const t = ev.target as HTMLElement;
             if (t.classList.contains('patients-modal-overlay') || t.classList.contains('btn-cancel') || t.classList.contains('close-x')) {
-                overlay!.classList.remove('show');
+                overlayElement.classList.remove('show');
             }
         });
-        // Handler click cho nút .btn-submit để đóng popup
-        overlay.querySelector('.btn-submit')?.addEventListener('click', () => {
-            overlay!.classList.remove('show');
-        });
+
+        const submitBtn = overlayElement.querySelector('.btn-submit') as HTMLButtonElement | null;
+        if (submitBtn) {
+            submitBtn.addEventListener('click', async (event) => {
+                event.preventDefault();
+                if (submitBtn.disabled) return;
+
+                const tenBenhNhan = (overlayElement.querySelector('input[name="tenBenhNhan"]') as HTMLInputElement)?.value.trim();
+                const tuoiValue = (overlayElement.querySelector('input[name="tuoi"]') as HTMLInputElement)?.value.trim();
+                const sdt = (overlayElement.querySelector('input[name="sdt"]') as HTMLInputElement)?.value.trim();
+                const diaChi = (overlayElement.querySelector('input[name="diaChi"]') as HTMLInputElement)?.value.trim();
+                const tinhTrangSucKhoe = (overlayElement.querySelector('select[name="tinhTrangSucKhoe"]') as HTMLSelectElement)?.value || '';
+                const hiddenInput = overlayElement.querySelector('input[name="keDon"]') as HTMLInputElement | null;
+                const selectedDrugsMap = (overlayElement as any).__patientsSelectedDrugs as Map<string, { name: string; quantity: number; max: number }> | undefined;
+
+                const normalizedTuoi = tuoiValue ? parseInt(tuoiValue, 10) : undefined;
+                const thuocDangSuDung = selectedDrugsMap && selectedDrugsMap.size > 0
+                    ? Array.from(selectedDrugsMap.values()).map(drug => `${drug.name} (${drug.quantity})`).join(', ')
+                    : (hiddenInput?.value?.trim() || '');
+
+                if (!tenBenhNhan) {
+                    alert('Vui lòng nhập tên bệnh nhân');
+                    return;
+                }
+
+                if (normalizedTuoi !== undefined && (!Number.isFinite(normalizedTuoi) || normalizedTuoi <= 0)) {
+                    alert('Vui lòng nhập tuổi hợp lệ');
+                    return;
+                }
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Đang lưu...';
+
+                try {
+                    const payload: Record<string, unknown> = {
+                        tenBenhNhan,
+                        tuoi: Number.isFinite(normalizedTuoi as number) ? normalizedTuoi : null,
+                        sdt,
+                        diaChi,
+                        tinhTrangSucKhoe,
+                        thuocDangSuDung
+                    };
+
+                    const overlayState = overlayElement as any;
+                    const patientId = overlayState.__editingPatientId as string | undefined;
+                    const isEdit = type === 'edit' && patientId;
+
+                    const response = await fetch(isEdit ? `${API_BASE}/patients/${patientId}` : `${API_BASE}/patients`, {
+                        method: isEdit ? 'PUT' : 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        const bodyText = await response.text();
+                        const errorMessage = bodyText || `Không thể lưu bệnh nhân (HTTP ${response.status})`;
+                        throw new Error(errorMessage);
+                    }
+
+                    let savedPatient: Patient | null = null;
+                    const responseContentType = response.headers.get('content-type') || '';
+                    if (responseContentType.includes('application/json')) {
+                        try {
+                            savedPatient = await response.json();
+                        } catch {
+                            savedPatient = null;
+                        }
+                    }
+                    if (savedPatient) {
+                        window.__upsertPatient?.(savedPatient);
+                    }
+
+                    overlayElement.classList.remove('show');
+                    if (window.__refreshPatientsList) {
+                        await window.__refreshPatientsList();
+                    }
+                } catch (error: any) {
+                    const rawMessage = error?.message || 'Không thể lưu bệnh nhân';
+                    alert(rawMessage);
+                    console.error('Failed to save patient:', error);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = type === 'add' ? 'Thêm mới' : 'Lưu lại';
+                }
+            });
+        }
 
         // Xử lý thêm thuốc vào kê đơn
-        setupPrescriptionHandler(overlay as HTMLDivElement);
+        setupPrescriptionHandler(overlayElement);
 
-        return overlay as HTMLDivElement;
+        return overlayElement;
     };
 
     const openAddModal = () => {
@@ -469,10 +687,16 @@ declare global { interface Window { __patientsModalsInitialized?: boolean; } }
         if (listContainer) {
             listContainer.innerHTML = '<p style="color: #999; font-style: italic; margin-top: 10px;">Chưa có thuốc nào được chọn</p>';
         }
+        populateDrugSelect(overlay as HTMLDivElement);
+        const selectedMap = (overlay as any).__patientsSelectedDrugs as Map<string, { name: string; quantity: number; max: number }> | undefined;
+        const updateList = (overlay as any).__updatePatientsSelectedDrugsList as (() => void) | undefined;
+        if (selectedMap) selectedMap.clear();
+        updateList?.();
+        (overlay as any).__editingPatientId = undefined;
         overlay.classList.add('show');
     };
 
-    const openEditModal = (data: { tenBenhNhan: string; tuoi: string; sdt: string; diaChi: string; tinhTrangSucKhoe: string }) => {
+    const openEditModal = (data: { id?: string; tenBenhNhan: string; tuoi: string; sdt: string; diaChi: string; tinhTrangSucKhoe: string; thuocDangSuDung: string }) => {
         const overlay = ensureModal('edit');
         (overlay.querySelector('input[name="tenBenhNhan"]') as HTMLInputElement).value = data.tenBenhNhan || '';
         (overlay.querySelector('input[name="tuoi"]') as HTMLInputElement).value = data.tuoi || '';
@@ -493,6 +717,53 @@ declare global { interface Window { __patientsModalsInitialized?: boolean; } }
         if (listContainer) {
             listContainer.innerHTML = '<p style="color: #999; font-style: italic; margin-top: 10px;">Chưa có thuốc nào được chọn</p>';
         }
+        populateDrugSelect(overlay as HTMLDivElement);
+        const hiddenInput = overlay.querySelector('input[name="keDon"]') as HTMLInputElement | null;
+        const rawPrescription = data.thuocDangSuDung || '';
+        if (hiddenInput) {
+            hiddenInput.value = rawPrescription;
+        }
+        const selectedMap = (overlay as any).__patientsSelectedDrugs as Map<string, { name: string; quantity: number; max: number }> | undefined;
+        const updateList = (overlay as any).__updatePatientsSelectedDrugsList as (() => void) | undefined;
+        if (selectedMap) {
+            selectedMap.clear();
+            if (rawPrescription) {
+                const entries = rawPrescription.split(',').map(entry => entry.trim()).filter(entry => entry.length > 0);
+                entries.forEach((entry, index) => {
+                    const quantityMatch = entry.match(/\((\d+)\)\s*$/);
+                    const quantity = quantityMatch ? parseInt(quantityMatch[1], 10) : 1;
+                    const safeQuantity = Number.isFinite(quantity) && quantity > 0 ? quantity : 1;
+                    const name = quantityMatch ? entry.slice(0, quantityMatch.index).trim() : entry;
+                    if (!name) return;
+                    const matchedDrug = availableDrugs.find(drug => (drug.tenThuoc || '').toLowerCase() === name.toLowerCase());
+                    if (matchedDrug) {
+                        selectedMap.set(String(matchedDrug.id), {
+                            name: matchedDrug.tenThuoc || name,
+                            quantity: safeQuantity,
+                            max: Math.max(0, matchedDrug.soLuong ?? safeQuantity)
+                        });
+                    } else {
+                        selectedMap.set(`manual-${index}`, {
+                            name,
+                            quantity: safeQuantity,
+                            max: Math.max(1, safeQuantity)
+                        });
+                    }
+                });
+            }
+            updateList?.();
+            if (selectedMap.size === 0) {
+                if (hiddenInput) {
+                    hiddenInput.value = rawPrescription;
+                }
+                if (listContainer && rawPrescription) {
+                    listContainer.innerHTML = `<p style="color: #999; margin-top: 10px;">${escapeHtml(rawPrescription)}</p>`;
+                }
+            }
+        } else {
+            updateList?.();
+        }
+        (overlay as any).__editingPatientId = data.id;
         overlay.classList.add('show');
     };
 
@@ -516,6 +787,7 @@ declare global { interface Window { __patientsModalsInitialized?: boolean; } }
             const row = editIcon.closest('tr');
             if (row) {
                 const cells = Array.from(row.querySelectorAll('td'));
+                const id = row.getAttribute('data-patient-id') || undefined;
                 const tenBenhNhan = cells[1]?.textContent?.trim() || '';
                 const tuoi = cells[2]?.textContent?.trim() || '';
                 const sdt = cells[3]?.textContent?.trim() || '';
@@ -527,7 +799,8 @@ declare global { interface Window { __patientsModalsInitialized?: boolean; } }
                     const span = tinhTrangContainer.querySelector('span');
                     tinhTrang = (span?.textContent || tinhTrangContainer.textContent || '').trim();
                 }
-                openEditModal({ tenBenhNhan, tuoi, sdt, diaChi, tinhTrangSucKhoe: tinhTrang });
+                const thuocDangSuDung = cells[6]?.textContent?.trim() || '';
+                openEditModal({ id, tenBenhNhan, tuoi, sdt, diaChi, tinhTrangSucKhoe: tinhTrang, thuocDangSuDung });
             }
             return;
         }

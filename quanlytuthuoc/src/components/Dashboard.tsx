@@ -7,6 +7,23 @@ import DrugChart from "./DrugChart";
 import "./Dashboard.css";
 import CalendarCard from "./CalendarCard";
 
+type Drug = {
+  id: number;
+  tenThuoc: string;
+  loaiThuoc: string;
+  soLuong: number;
+  hsd: string;
+  ngayNhap: string;
+  nhaCungCap: string;
+};
+
+type Patient = {
+  id: number;
+  tenBenhNhan: string;
+};
+
+const API_BASE = "http://localhost:8000/api";
+
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
@@ -17,6 +34,35 @@ const fadeInUp = {
 const Dashboard: React.FC = () => {
   const { fullName, username } = useAuth();
   const navigate = useNavigate();
+  const [drugs, setDrugs] = React.useState<Drug[]>([]);
+  const [patients, setPatients] = React.useState<Patient[]>([]);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [showStockModal, setShowStockModal] = React.useState(false);
+
+  React.useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [drugRes, patientRes] = await Promise.all([
+          fetch(`${API_BASE}/drugs`),
+          fetch(`${API_BASE}/patients`)
+        ]);
+        if (!drugRes.ok) throw new Error(await drugRes.text());
+        if (!patientRes.ok) throw new Error(await patientRes.text());
+        const drugData = await drugRes.json();
+        const patientData = await patientRes.json();
+        setDrugs(Array.isArray(drugData) ? drugData : []);
+        setPatients(Array.isArray(patientData) ? patientData : []);
+        setError(null);
+      } catch (e) {
+        setError("Không tải được dữ liệu thống kê");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
   
   React.useEffect(() => {
     const storedFullName = localStorage.getItem('fullName');
@@ -54,23 +100,28 @@ const Dashboard: React.FC = () => {
     return names[names.length - 1];
   };
 
-  const handleViewPatients = () => {
-    navigate('/patients');
+  const handleViewPatients = () => navigate('/patients');
+  const handleViewDrugs = () => navigate('/drugs');
+
+  const totalPatients = patients.length;
+  const totalQuantity = drugs.reduce((s, d) => s + (d.soLuong || 0), 0);
+  const totalDrugEntries = drugs.length;
+
+  const sortedByQty = [...drugs].sort((a, b) => (b.soLuong || 0) - (a.soLuong || 0));
+  const stockItems = sortedByQty.slice(0, 5).map(d => ({ name: d.tenThuoc, qty: d.soLuong || 0 }));
+  const stockTotal = stockItems.reduce((s, i) => s + i.qty, 0);
+
+  const daysUntil = (hsd: string) => {
+    if (!hsd) return Number.POSITIVE_INFINITY;
+    const diff = new Date(hsd).getTime() - Date.now();
+    return Math.floor(diff / (1000 * 60 * 60 * 24));
   };
 
-  const handleViewDrugs = () => {
-    navigate('/drugs');
-  };
-  // Modal hiển thị đầy đủ thông tin thuốc trong kho
-  const [showStockModal, setShowStockModal] = React.useState(false);
-  const stockItems = [
-    { name: 'Paracetamol 500mg', qty: 300 },
-    { name: 'Amoxicillin 250mg', qty: 250 },
-    { name: 'Vitamin C 1000mg', qty: 210 },
-    { name: 'Ibuprofen 200mg', qty: 160 },
-    { name: 'Cefixime 100mg', qty: 130 },
-  ];
-  const stockTotal = stockItems.reduce((s,i)=>s+i.qty,0);
+  const lowStock = drugs.filter(d => (d.soLuong || 0) <= 10).slice(0, 3);
+  const nearExpiry = drugs.filter(d => {
+    const days = daysUntil(d.hsd);
+    return days > 0 && days <= 30;
+  }).slice(0, 3);
   
   return (
     <div className="p-4">
@@ -87,6 +138,9 @@ const Dashboard: React.FC = () => {
         </Card>
       </motion.div>
 
+      {error && <div style={{ color: '#dc3545', marginBottom: 12 }}>{error}</div>}
+      {loading && <div style={{ marginBottom: 12 }}>Đang tải dữ liệu...</div>}
+
       {/* Statistics Cards */}
       <Row className="mb-4">
         <Col md={4}>
@@ -100,7 +154,7 @@ const Dashboard: React.FC = () => {
               <Card.Body className="d-flex flex-column">
                 <Card.Title>Số lượng bệnh nhân</Card.Title>
                 <div className="text-center my-3">
-                  <h2 className="display-4">50</h2>
+                  <h2 className="display-4">{totalPatients}</h2>
                 </div>
                 <div className="mt-auto text-end">
                   <Card.Link 
@@ -127,7 +181,7 @@ const Dashboard: React.FC = () => {
               <Card.Body className="d-flex flex-column">
                 <Card.Title>Tổng số lượng thuốc trong kho</Card.Title>
                 <div className="text-center my-3">
-                  <h2 className="display-4">5000</h2>
+                  <h2 className="display-4">{totalQuantity.toLocaleString('vi-VN')}</h2>
                 </div>
                 <div className="mt-auto text-end">
                   <Card.Link 
@@ -154,7 +208,7 @@ const Dashboard: React.FC = () => {
               <Card.Body className="d-flex flex-column">
                 <Card.Title>Số lượng thuốc đã nhập</Card.Title>
                 <div className="text-center my-3">
-                  <h2 className="display-4">10.00</h2>
+                  <h2 className="display-4">{totalDrugEntries}</h2>
                 </div>
                 <div className="mt-auto text-end">
                   <Card.Link 
@@ -182,23 +236,20 @@ const Dashboard: React.FC = () => {
                 <button className="btn btn-link p-0 small" onClick={() => setShowStockModal(true)}>Xem tất cả</button>
               </div>
               <div className="ts-list">
-                {(() => {
-                  const total = stockTotal;
-                  return stockItems.map((it) => {
-                    const percent = Math.round((it.qty/total)*100);
-                    return (
-                      <div key={it.name} className="ts-item">
-                        <div className="d-flex justify-content-between align-items-center mb-1">
-                          <span className="item-name">{it.name}</span>
-                          <span className="small text-muted">{percent}%</span>
-                        </div>
-                        <div className="ts-progress">
-                          <div className="ts-bar" style={{ width: `${percent}%` }} />
-                        </div>
+                {(stockItems.length ? stockItems : [{ name: 'Chưa có dữ liệu', qty: 0 }]).map((it) => {
+                  const percent = stockTotal > 0 ? Math.round((it.qty/stockTotal)*100) : 0;
+                  return (
+                    <div key={it.name} className="ts-item">
+                      <div className="d-flex justify-content-between align-items-center mb-1">
+                        <span className="item-name">{it.name}</span>
+                        <span className="small text-muted">{percent}%</span>
                       </div>
-                    );
-                  });
-                })()}
+                      <div className="ts-progress">
+                        <div className="ts-bar" style={{ width: `${percent}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </Card>
           </motion.div>
@@ -209,9 +260,9 @@ const Dashboard: React.FC = () => {
               <Card.Body>
                 <div className="card-title-compact">Cảnh báo tồn kho thấp</div>
                 <ul className="list-unstyled compact-list mb-0">
-                  <li className="compact-item"><span className="item-name">Paracetamol 500mg</span><span className="badge-soft danger">Còn 12</span></li>
-                  <li className="compact-item"><span className="item-name">Amoxicillin 250mg</span><span className="badge-soft warn">Còn 28</span></li>
-                  <li className="compact-item"><span className="item-name">Vitamin C 1000mg</span><span className="badge-soft okay">Còn 55</span></li>
+                  {(lowStock.length ? lowStock : [{ id: -1, tenThuoc: 'Chưa có dữ liệu', soLuong: 0 } as Drug]).map(it => (
+                    <li key={it.id} className="compact-item"><span className="item-name">{it.tenThuoc}</span><span className="badge-soft danger">Còn {it.soLuong}</span></li>
+                  ))}
                 </ul>
               </Card.Body>
             </Card>
@@ -222,9 +273,12 @@ const Dashboard: React.FC = () => {
               <Card.Body>
                 <div className="card-title-compact">Sắp hết hạn</div>
                 <ul className="list-unstyled compact-list mb-0">
-                  <li className="compact-item"><span className="item-name">Cefixime 100mg</span><span className="badge-soft warn">Còn 15 ngày</span></li>
-                  <li className="compact-item"><span className="item-name">Siro ho Prospan</span><span className="badge-soft danger">Còn 5 ngày</span></li>
-                  <li className="compact-item"><span className="item-name">Omeprazole 20mg</span><span className="badge-soft okay">Còn 5 ngày</span></li>
+                  {(nearExpiry.length ? nearExpiry : [{ id: -1, tenThuoc: 'Chưa có dữ liệu', hsd: '' } as Drug]).map(it => {
+                    const days = daysUntil(it.hsd);
+                    return (
+                      <li key={it.id} className="compact-item"><span className="item-name">{it.tenThuoc}</span><span className="badge-soft warn">Còn {days} ngày</span></li>
+                    );
+                  })}
                 </ul>
               </Card.Body>
             </Card>
@@ -235,9 +289,9 @@ const Dashboard: React.FC = () => {
               <Card.Body>
                 <div className="card-title-compact">Hoạt động gần đây</div>
                 <ul className="list-unstyled activity-list mb-0">
-                  <li><span className="dot dot-in"></span> Nhập 200 hộp Paracetamol • 10:20</li>
-                  <li><span className="dot dot-out"></span> Xuất 30 vỉ Vitamin C • 09:05</li>
-                  <li><span className="dot dot-edit"></span> Cập nhật Amoxicillin • Hôm qua</li>
+                  {(drugs.slice(0, 5).map(d => (
+                    <li key={d.id}><span className="dot dot-edit"></span> Cập nhật {d.tenThuoc}</li>
+                  ))).concat(drugs.length === 0 ? [<li key="empty"><span className="dot"></span> Chưa có dữ liệu</li>] : [])}
                 </ul>
               </Card.Body>
             </Card>
@@ -283,10 +337,10 @@ const Dashboard: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {stockItems.map((it, idx) => {
-                const percent = Math.round((it.qty/stockTotal)*100);
+              {(stockItems.length ? stockItems : [{ name: 'Chưa có dữ liệu', qty: 0 }]).map((it, idx) => {
+                const percent = stockTotal > 0 ? Math.round((it.qty/stockTotal)*100) : 0;
                 return (
-                  <tr key={it.name}>
+                  <tr key={it.name + idx}>
                     <td className="text-muted">{idx+1}</td>
                     <td className="drug-name">{it.name}</td>
                     <td className="text-end num">{it.qty.toLocaleString('vi-VN')}</td>

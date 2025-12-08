@@ -43,6 +43,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorize -> authorize
                 // Cho phép tất cả mọi người truy cập API Đăng ký và Đăng nhập
                 .requestMatchers("/api/auth/**").permitAll()
+                // Cho phép tạm thời toàn bộ API khác để frontend gọi
+                .requestMatchers("/api/**").permitAll()
                 // Tất cả các request khác yêu cầu xác thực (authenticated)
                 .anyRequest().authenticated()
             );
