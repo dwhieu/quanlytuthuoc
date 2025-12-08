@@ -31,7 +31,17 @@ interface PatientRecord {
 interface PatientDrugRow {
   id: number;
   name: string;
-  note?: string;
+  quantity?: number;
+  expiry?: string;
+  status?: string;
+}
+
+interface CatalogDrug {
+  id?: number;
+  tenThuoc?: string;
+  soLuong?: number;
+  hsd?: string;
+  tinhTrang?: string;
 }
 
 const API_BASE = "http://localhost:8000/api";
@@ -68,6 +78,9 @@ const UserDashboard: React.FC = () => {
   const [patientRecord, setPatientRecord] = React.useState<PatientRecord | null>(null);
   const [patientLoading, setPatientLoading] = React.useState(false);
   const [patientError, setPatientError] = React.useState<string | null>(null);
+  const [drugCatalog, setDrugCatalog] = React.useState<CatalogDrug[]>([]);
+  const [catalogLoading, setCatalogLoading] = React.useState(false);
+  const [catalogError, setCatalogError] = React.useState<string | null>(null);
 
   // Fetch profile data
   useEffect(() => {
@@ -152,6 +165,34 @@ const UserDashboard: React.FC = () => {
     return () => controller.abort();
   }, [username, fullName]);
 
+  useEffect(() => {
+    const controller = new AbortController();
+    const loadCatalog = async () => {
+      setCatalogLoading(true);
+      setCatalogError(null);
+      try {
+        const res = await fetch(`${API_BASE}/drugs`, { signal: controller.signal });
+        if (!res.ok) {
+          const message = await res.text();
+          setCatalogError(message || 'Không thể tải danh sách thuốc');
+          setDrugCatalog([]);
+          return;
+        }
+        const data = await res.json();
+        setDrugCatalog(Array.isArray(data) ? data : []);
+      } catch (err: any) {
+        if (err?.name === 'AbortError') return;
+        setCatalogError('Không thể tải danh sách thuốc');
+        setDrugCatalog([]);
+      } finally {
+        setCatalogLoading(false);
+      }
+    };
+
+    loadCatalog();
+    return () => controller.abort();
+  }, []);
+
   // Load avatar
   useEffect(() => {
     try {
@@ -176,6 +217,18 @@ const UserDashboard: React.FC = () => {
   const patientDrugRows = React.useMemo<PatientDrugRow[]>(() => {
     const raw = patientRecord?.thuocDangSuDung;
     if (!raw) return [];
+
+    const normalizeName = (value: string) => value.trim().toLowerCase();
+
+    const formatDate = (value?: string) => {
+      if (!value) return undefined;
+      const parsed = new Date(value);
+      if (Number.isNaN(parsed.getTime())) {
+        return value;
+      }
+      return new Intl.DateTimeFormat('vi-VN').format(parsed);
+    };
+
     return raw
       .split(/[,\n]+/)
       .map(entry => entry.trim())
@@ -183,10 +236,41 @@ const UserDashboard: React.FC = () => {
       .map((entry, index) => {
         const match = entry.match(/^(.*?)(?:\((.*)\))?$/);
         const name = match && match[1] ? match[1].trim() : entry;
-        const note = match && match[2] ? match[2].trim() : '';
-        return { id: index + 1, name, note };
+        const quantityText = match && match[2] ? match[2].trim() : '';
+        const numericQuantity = quantityText ? parseInt(quantityText.replace(/[^\d]/g, ''), 10) : undefined;
+        const catalogEntry = drugCatalog.find(
+          catalogDrug => normalizeName(catalogDrug.tenThuoc || '') === normalizeName(name)
+        );
+
+        return {
+          id: index + 1,
+          name,
+          quantity: Number.isFinite(numericQuantity) ? numericQuantity : undefined,
+          expiry: formatDate(catalogEntry?.hsd),
+          status: catalogEntry?.tinhTrang || undefined
+        };
       });
-  }, [patientRecord]);
+  }, [patientRecord, drugCatalog]);
+
+  const uniqueDrugCount = React.useMemo(() => {
+    if (patientDrugRows.length === 0) return 0;
+    const unique = new Set(
+      patientDrugRows
+        .map(row => row.name.trim().toLowerCase())
+        .filter(Boolean)
+    );
+    return unique.size;
+  }, [patientDrugRows]);
+
+  const healthStatusLabel = React.useMemo(() => {
+    if (patientLoading) return 'Đang tải...';
+    const status = patientRecord?.tinhTrangSucKhoe?.trim();
+    if (!status) {
+      if (patientError) return 'Không có dữ liệu';
+      return 'Chưa cập nhật';
+    }
+    return status;
+  }, [patientLoading, patientRecord, patientError]);
 
   const menuItems = [
     { icon: <FaHomeIcon />, text: "Trang chủ", to: "/user-dashboard", id: "home" },
@@ -277,7 +361,9 @@ const UserDashboard: React.FC = () => {
                   <div className="stat-icon">📋</div>
                   <div className="stat-content">
                     <h6 className="stat-label">Đơn thuốc</h6>
-                    <p className="stat-value">12</p>
+                    <p className="stat-value">
+                      {patientLoading ? '...' : patientRecord ? patientDrugRows.length : 0}
+                    </p>
                   </div>
                 </motion.div>
 
@@ -289,7 +375,7 @@ const UserDashboard: React.FC = () => {
                   <div className="stat-icon">❤️</div>
                   <div className="stat-content">
                     <h6 className="stat-label">Sức khỏe</h6>
-                    <p className="stat-value">Tốt</p>
+                    <p className="stat-value">{healthStatusLabel}</p>
                   </div>
                 </motion.div>
 
@@ -301,7 +387,15 @@ const UserDashboard: React.FC = () => {
                   <div className="stat-icon">💊</div>
                   <div className="stat-content">
                     <h6 className="stat-label">Thuốc hiện tại</h6>
-                    <p className="stat-value">5 loại</p>
+                    <p className="stat-value">
+                      {patientLoading
+                        ? '...'
+                        : uniqueDrugCount > 0
+                          ? `${uniqueDrugCount} loại`
+                          : patientRecord
+                            ? '0 loại'
+                            : 'Chưa có dữ liệu'}
+                    </p>
                   </div>
                 </motion.div>
 
@@ -640,30 +734,44 @@ const UserDashboard: React.FC = () => {
                       <tr>
                         <th className="col-stt">STT</th>
                         <th className="col-name">Tên thuốc</th>
-                        <th className="col-note">Hướng dẫn / Ghi chú</th>
+                        <th className="col-quantity">Số lượng</th>
+                        <th className="col-expiry">Hạn dùng</th>
+                        <th className="col-status">Tình trạng</th>
                       </tr>
                     </thead>
                     <tbody>
                       {patientLoading && (
                         <tr>
-                          <td colSpan={3}>Đang tải danh sách thuốc...</td>
+                          <td colSpan={5}>Đang tải danh sách thuốc...</td>
                         </tr>
                       )}
                       {!patientLoading && patientError && (
                         <tr>
-                          <td colSpan={3} style={{ color: '#dc3545' }}>{patientError}</td>
+                          <td colSpan={5} style={{ color: '#dc3545' }}>{patientError}</td>
+                        </tr>
+                      )}
+                      {!patientLoading && !patientError && catalogError && (
+                        <tr>
+                          <td colSpan={5} style={{ color: '#dc3545' }}>{catalogError}</td>
+                        </tr>
+                      )}
+                      {!patientLoading && !patientError && !catalogError && catalogLoading && (
+                        <tr>
+                          <td colSpan={5}>Đang tải thông tin thuốc...</td>
                         </tr>
                       )}
                       {!patientLoading && !patientError && patientDrugRows.length === 0 && (
                         <tr>
-                          <td colSpan={3}>Hiện chưa có thuốc nào được kê cho bạn.</td>
+                          <td colSpan={5}>Hiện chưa có thuốc nào được kê cho bạn.</td>
                         </tr>
                       )}
-                      {!patientLoading && !patientError && patientDrugRows.map((drug) => (
+                      {!patientLoading && !patientError && !catalogError && patientDrugRows.map((drug) => (
                         <tr key={drug.id}>
                           <td>{drug.id}</td>
                           <td>{drug.name}</td>
-                          <td>{drug.note || '—'}</td>
+                          <td>{Number.isFinite(drug.quantity) ? drug.quantity : '—'}</td>
+                          <td>{drug.expiry || '—'}</td>
+                          <td>{drug.status || '—'}</td>
                         </tr>
                       ))}
                     </tbody>
